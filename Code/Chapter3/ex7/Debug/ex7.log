@@ -1,0 +1,5 @@
+﻿  stdafx.cpp
+  ex7.cpp
+c:\users\hui shan\desktop\pmi\code\chapter3\ex7\ex7.cpp(29): warning C4018: '<': signed/unsigned mismatch
+  ex7.vcxproj -> C:\Users\Hui Shan\Desktop\PMI\Code\Chapter3\Debug\ex7.exe
+  ex7.vcxproj -> C:\Users\Hui Shan\Desktop\PMI\Code\Chapter3\Debug\ex7.pdb (Partial PDB)
