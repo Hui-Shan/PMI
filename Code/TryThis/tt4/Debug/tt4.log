@@ -1,0 +1,4 @@
+﻿  tt4.cpp
+c:\users\user\documents\courses\gslscourses\pmi\code\trythis\tt4\tt4.cpp(20): warning C4018: '<': signed/unsigned mismatch
+  tt4.vcxproj -> C:\Users\user\Documents\Courses\GSLSCourses\PMI\Code\TryThis\Debug\tt4.exe
+  tt4.vcxproj -> C:\Users\user\Documents\Courses\GSLSCourses\PMI\Code\TryThis\Debug\tt4.pdb (Partial PDB)
