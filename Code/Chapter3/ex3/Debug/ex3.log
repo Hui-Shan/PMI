@@ -1,0 +1,4 @@
+﻿  ex3.cpp
+c:\users\hui shan\desktop\pmi\code\chapter3\ex3\ex3.cpp(10): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  ex3.vcxproj -> C:\Users\Hui Shan\Desktop\PMI\Code\Chapter3\Debug\ex3.exe
+  ex3.vcxproj -> C:\Users\Hui Shan\Desktop\PMI\Code\Chapter3\Debug\ex3.pdb (Partial PDB)
