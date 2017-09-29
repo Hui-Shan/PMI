@@ -1,13 +1,13 @@
 
 /*
-calculator08buggy.cpp
+	calculator08buggy.cpp
 
-Helpful comments removed.
+	Helpful comments removed.
 
-We have inserted 3 bugs that the compiler will catch and 3 that it won't.
+	We have inserted 3 bugs that the compiler will catch and 3 that it won't.
 */
 
-#include "../../std_lib_facilities.h"
+#include "std_lib_facilities.h"
 
 struct Token {
 	char kind;
@@ -24,7 +24,7 @@ public:
 	Token_stream() :full(0), buffer(0) { }
 
 	Token get();
-	void unget(Token t) { buffer = t; full = true; }
+	void unget(Token t) { buffer=t; full=true; }
 
 	void ignore(char);
 };
@@ -37,14 +37,12 @@ const char name = 'a';
 
 Token Token_stream::get()
 {
-	if (full) { full = false; return buffer; }
+	if (full) { full=false; return buffer; }
 	char ch;
 	cin >> ch;
 	switch (ch) {
 	case '(':
 	case ')':
-	case '{':
-	case '}':
 	case '+':
 	case '-':
 	case '*':
@@ -65,20 +63,19 @@ Token Token_stream::get()
 	case '8':
 	case '9':
 	{	cin.unget();
-	double val;
-	cin >> val;
-	return Token(number, val);
+		double val;
+		cin >> val;
+		return Token(number,val);
 	}
 	default:
 		if (isalpha(ch)) {
 			string s;
 			s += ch;
-			while (cin.get(ch) && (isalpha(ch) || isdigit(ch))) s = ch;
+			while(cin.get(ch) && (isalpha(ch) || isdigit(ch))) s=ch;
 			cin.unget();
-			if (s == "let") return Token(let);
+			if (s == "let") return Token(let);	
 			if (s == "quit") return Token(name);
-			return Token(name);
-			//return Token(number, val);
+			return Token(name, s);
 		}
 		error("Bad token");
 	}
@@ -86,15 +83,15 @@ Token Token_stream::get()
 
 void Token_stream::ignore(char c)
 {
-	if (full && c == buffer.kind) {
+	if (full && c==buffer.kind) {
 		full = false;
 		return;
 	}
 	full = false;
 
 	char ch;
-	while (cin >> ch)
-		if (ch == c) return;
+	while (cin>>ch)
+		if (ch==c) return;
 }
 
 struct Variable {
@@ -103,23 +100,23 @@ struct Variable {
 	Variable(string n, double v) :name(n), value(v) { }
 };
 
-vector<Variable> names;
+vector<Variable> names;	
 
 double get_value(string s)
 {
 	for (int i = 0; i<names.size(); ++i)
 		if (names[i].name == s) return names[i].value;
-	error("get: undefined name ", s);
+	error("get: undefined name ",s);
 }
 
 void set_value(string s, double d)
 {
-	for (int i = 0; i <= names.size(); ++i)
+	for (int i = 0; i<=names.size(); ++i)
 		if (names[i].name == s) {
 			names[i].value = d;
 			return;
 		}
-	error("set: undefined name ", s);
+	error("set: undefined name ",s);
 }
 
 bool is_declared(string s)
@@ -139,11 +136,11 @@ double primary()
 	switch (t.kind) {
 	case '(':
 	{	double d = expression();
-	t = ts.get();
-	if (t.kind != ')') error("'(' expected");
+		t = ts.get();
+		if (t.kind != ')') error("'(' expected");
 	}
 	case '-':
-		return -primary();
+		return - primary();
 	case number:
 		return t.value;
 	case name:
@@ -156,17 +153,17 @@ double primary()
 double term()
 {
 	double left = primary();
-	while (true) {
+	while(true) {
 		Token t = ts.get();
-		switch (t.kind) {
+		switch(t.kind) {
 		case '*':
 			left *= primary();
 			break;
 		case '/':
 		{	double d = primary();
-		if (d == 0) error("divide by zero");
-		left /= d;
-		break;
+			if (d == 0) error("divide by zero");
+			left /= d;
+			break;
 		}
 		default:
 			ts.unget(t);
@@ -178,9 +175,9 @@ double term()
 double expression()
 {
 	double left = term();
-	while (true) {
+	while(true) {
 		Token t = ts.get();
-		switch (t.kind) {
+		switch(t.kind) {
 		case '+':
 			left += term();
 			break;
@@ -197,20 +194,20 @@ double expression()
 double declaration()
 {
 	Token t = ts.get();
-	if (t.kind != 'a') error("name expected in declaration");
+	if (t.kind != 'a') error ("name expected in declaration");
 	string name = t.name;
 	if (is_declared(name)) error(name, " declared twice");
 	Token t2 = ts.get();
-	if (t2.kind != '=') error("= missing in declaration of ", name);
+	if (t2.kind != '=') error("= missing in declaration of " ,name);
 	double d = expression();
-	names.push_back(Variable(name, d));
+	names.push_back(Variable(name,d));
 	return d;
 }
 
 double statement()
 {
 	Token t = ts.get();
-	switch (t.kind) {
+	switch(t.kind) {
 	case let:
 		return declaration();
 	default:
@@ -229,15 +226,15 @@ const string result = "= ";
 
 void calculate()
 {
-	while (true) try {
+	while(true) try {
 		cout << prompt;
 		Token t = ts.get();
-		while (t.kind == print) t = ts.get();
+		while (t.kind == print) t=ts.get();
 		if (t.kind == quit) return;
 		ts.unget(t);
 		cout << result << statement() << endl;
 	}
-	catch (runtime_error& e) {
+	catch(runtime_error& e) {
 		cerr << e.what() << endl;
 		clean_up_mess();
 	}
@@ -245,19 +242,19 @@ void calculate()
 
 int main()
 
-try {
-	calculate();
-	return 0;
-}
-catch (exception& e) {
-	cerr << "exception: " << e.what() << endl;
-	char c;
-	while (cin >> c&& c != ';');
-	return 1;
-}
-catch (...) {
-	cerr << "exception\n";
-	char c;
-	while (cin >> c && c != ';');
-	return 2;
-}
+	try {
+		calculate();
+		return 0;
+	}
+	catch (exception& e) {
+		cerr << "exception: " << e.what() << endl;
+		char c;
+		while (cin >>c&& c!=';') ;
+		return 1;
+	}
+	catch (...) {
+		cerr << "exception\n";
+		char c;
+		while (cin>>c && c!=';');
+		return 2;
+	}

@@ -154,12 +154,13 @@ double term()
 			t = ts.get();
 			break;
 		}
-		case '%':
+/*		case '%':
 			cout << "'%' not yet implemented\n";
 			int left_int = int(left);
 			left_int = left_int % int(primary());
 			t = ts.get();
 			break;
+*/
 		default:
 			ts.putback(t);     // put t back into the token stream
 			return left;
