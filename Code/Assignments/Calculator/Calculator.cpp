@@ -153,23 +153,34 @@ struct Variable {
 	Variable(string n, double v, bool c) :name(n), value(v), constant(c) { }
 };
 
-vector<Variable> names;
+class Symbol_table {
+	
+public: 
+	double get(string var_name);
+	void set(string s, double d, bool b=false);
+	bool is_declared(string s);
+	void declare(string s, double d, bool b=false);
+	
+private:
+	vector<Variable> var_table;
 
-double get_value(string s)
-	// returns the value of the Variable with name s
-{	
-	for (int i = 0; i < names.size(); ++i)
-		if (names[i].name == s) return names[i].value;	
+};
+
+double Symbol_table::get(string s)
+// returns the value of the Variable with name s
+{
+	for (int i = 0; i < var_table.size(); ++i)
+		if (var_table[i].name == s) return var_table[i].value;
 	error("get: undefined name ", s);
 }
 
-void set_value(string s, double d)
+void Symbol_table::set(string s, double d, bool b)
 	// sets the value of the Variable named s to d
 {	
-	for (int i = 0; i <= names.size(); ++i)
-		if (names[i].name == s) {
-			if (names[i].constant == false) {
-				names[i].value = d;
+	for (int i = 0; i < var_table.size(); ++i)
+		if (var_table[i].name == s) {
+			if (var_table[i].constant == false) {
+				var_table[i].value = d;
 			}
 			else {
 				cout << "Cannot change value of constant variable.\n";				
@@ -179,13 +190,24 @@ void set_value(string s, double d)
 	error("set: undefined name ", s);
 }
 
-bool is_declared(string s)
+bool Symbol_table::is_declared(string s)
 	// checks if a Variable with name s has been declared before, 
 	// returns true if so, otherwise returns false
 {
-	for (int i = 0; i<names.size(); ++i)
-		if (names[i].name == s) return true;
+	for (int i = 0; i<var_table.size(); ++i)
+		if (var_table[i].name == s) return true;
 	return false;
+}
+
+void Symbol_table::declare(string s, double d, bool b)
+{
+	if (is_declared(s)) {
+		return;
+	}
+	else {
+		var_table.push_back(Variable(s, d, b));
+	}
+	
 }
 
 double factorial(int n)
@@ -196,6 +218,7 @@ double factorial(int n)
 }
 
 Token_stream ts;
+Symbol_table symtab; 
 
 double expression();
 double postprimary();
@@ -229,12 +252,12 @@ double primary()
 		next = ts.get();
 		if (next.kind == '=') {
 			double d = expression();
-			set_value(t.name, d);
+			symtab.set(t.name, d);
 			return d;
 		}
 		else {
 			ts.unget(next);
-			return get_value(t.name);
+			return symtab.get(t.name);
 		}
 			
 	default:
@@ -328,16 +351,17 @@ double declaration()
 	if (t.kind != name && t.kind != '_') error("name expected in declaration");
 	string var_name = t.name;
 	
-	if (is_declared(var_name)) error(var_name, " declared twice");
+	if (symtab.is_declared(var_name)) error(var_name, " declared twice");
 	
 	Token t2 = ts.get();	
 	if (t2.kind != '=') error("= missing in declaration of ", var_name);
 	
 	double d = expression();		
-	if (is_declared(var_name))
-		set_value(var_name, d);
+	if (symtab.is_declared(var_name))
+		symtab.set(var_name, d);
 	else
-		names.push_back(Variable(var_name, d));
+		symtab.declare(var_name, d);
+		symtab.set(var_name, d);
 	
 	return d;
 }
@@ -382,10 +406,8 @@ void calculate()
 int main() {
 
 	// add constant values
-	Variable var_pi = Variable(pi_string, M_PI, true);
-	Variable var_e = Variable(e_string, M_E, true);
-	names.push_back(var_pi);
-	names.push_back(var_e);
+	symtab.declare(pi_string, M_PI, true);
+	symtab.declare(e_string, M_E, true);
 
 	try {
 		calculate();
