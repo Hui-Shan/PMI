@@ -68,13 +68,23 @@ private:
 };
 
 const char let = 'L';
-const char quit = 'Q';
+const char helpchar = 'H';
+const char quitchar = 'Q';
 const char print = ';';
 const char number = '8';
 const char name = 'a';
 const string declkey = "let";
 const string pi_string = "pi";
 const string e_string = "e";
+const string quit = "quit";
+const string help = "help";
+const string newline = "\n";
+
+const string help_message =
+"This executable is a simple calculator implementation.\n\n"
+"Supported operations are addition (+), subtraction (-), multiplication (*)\n"
+"division (/), and factorial (doubles will be converted to integers).\n\n"
+"pi and e are constant variables that are included in the variable list.\n";
 
 Token Token_stream::get()
 {
@@ -84,14 +94,12 @@ Token Token_stream::get()
 	}
 	char ch;
 	cin >> ch;
-/*	if (isspace(ch)) {
-		cout << "lala\n";
-		if (ch == '\n') return Token(print);
-		cin.unget();
-	}*/
+	if (isspace(ch))
+		cout << "hullo";
 	switch (ch) {
-	case quit : 
-	case print : 
+	case quitchar : 
+	case helpchar : 
+	case print : 	
 	case '(':
 	case ')':
 	case '{':
@@ -121,7 +129,8 @@ Token Token_stream::get()
 			while (cin.get(ch) && (isalpha(ch) || isdigit(ch) || ch=='_')) s += ch;
 			cin.unget();
 			if (s == declkey) return Token(let);		
-			if (ch == quit) return Token(quit);
+			if (s == quit) return Token(quitchar);
+			if (s == help) return Token(helpchar);
 			
 			return Token(name, s);			
 		}
@@ -393,15 +402,23 @@ void calculate()
 		cout << prompt;
 		Token t = ts.get();
 		while (t.kind == print) t = ts.get();
-		if (t.kind == quit) return;
-		ts.unget(t);
-		cout << statement() << endl;
+		if (t.kind == helpchar){
+			cout << help_message;
+		}
+		else {
+			if (t.kind == quitchar)	return;
+			ts.unget(t);
+			cout << statement() << endl;
+		}
+		
+
+		
 	}
 	catch (runtime_error& e) {
 		cerr << e.what() << endl;
 		clean_up_mess();
 	}
-}
+};
 
 int main() {
 
@@ -417,14 +434,15 @@ int main() {
 	catch (exception& e) {
 		cerr << "exception: " << e.what() << endl;
 		char c;
-		while (cin >> c&& c != quit);
+		while (cin >> c&& c != quitchar);
 		return 1;
 	}
 	catch (...) {
 		cerr << "exception\n";
 		char c;
-		while (cin >> c && c != quit);
+		while (cin >> c && c != quitchar);
 		return 2;
 	}
 }
+
 
