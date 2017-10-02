@@ -92,10 +92,17 @@ Token Token_stream::get()
 		full = false; 
 		return buffer; 
 	}
+	
 	char ch;
-	cin >> ch;
-	if (isspace(ch))
-		cout << "hullo";
+	ch = cin.get();
+	cout << "is space" << isspace(' ') << isspace('\n') << "\n";
+	cout << "Read " <<  ch << " " << isspace(ch) << " " << (ch==' ') << " " <<  (ch=='\n') << "\n";
+	//cin.unget();
+
+	//if (isspace(ch))
+	//	if (ch != '\n')
+	//		ch = cin.get();
+
 	switch (ch) {
 	case quitchar : 
 	case helpchar : 
@@ -110,8 +117,9 @@ Token Token_stream::get()
 	case '/':
 	case '%':
 	case '!':
-	case '=':	
-		return Token(ch);
+	case '=':
+	case ' ':
+		return Token(ch);	
 	case '.':
 	case '0': case '1': case '2': case '3': case '4': 
 	case '5': case '6': case '7': case '8': case '9':
@@ -121,6 +129,8 @@ Token Token_stream::get()
 		cin >> val;
 		return Token(number, val);
 	}
+	case '\n':
+		return Token(print);
 	default:
 		//std::cout << "in default" << std::endl;		
 		if (isalpha(ch) || ch=='_') {
@@ -219,10 +229,12 @@ void Symbol_table::declare(string s, double d, bool b)
 	
 }
 
-double factorial(int n)
-	// Recursive function computing the factorial for a given an integer value n
+double factorial(double n)
+	// Recursive function computing the factorial for a given an double value n
+	// factorial is defined with double, so that you run into over/underflow 
+	// less quickly
 {
-	int fact = (n == 1 || n == 0) ? 1 : factorial(n - 1) * n;
+	double fact = (n == 1.0 || n == 0.0) ? 1 : factorial(n - 1.0) * n;
 	return double(fact);
 }
 
