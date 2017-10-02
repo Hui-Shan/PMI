@@ -73,6 +73,13 @@ const char quitchar = 'Q';
 const char print = ';';
 const char number = '8';
 const char name = 'a';
+const char powchar = 'p';
+const char sqrtchar = 'v';
+const char sinchar = 's';
+
+const string powstr = "pow";
+const string sqrtstr = "sqrt";
+const string sinstr = "sin";
 const string declkey = "let";
 const string pi_string = "pi";
 const string e_string = "e";
@@ -81,10 +88,17 @@ const string help = "help";
 const string newline = "\n";
 
 const string help_message =
-"This executable is a simple calculator implementation.\n\n"
-"Supported operations are addition (+), subtraction (-), multiplication (*)\n"
-"division (/), and factorial (doubles will be converted to integers).\n\n"
-"pi and e are constant variables that are included in the variable list.\n";
+	"This executable is a simple calculator implementation.\n\n"
+	"Supported operations are addition (+), subtraction (-), multiplication (*)\n"
+	"division (/), modulo (%) and factorial (!). For % and !, doubles will be \n"
+	"converted to integers).\n"
+	"Pressing [Enter], and or writing the '\n' newline or ';' characters will \n"
+	"yield evaluation of the expressions.\n"
+	"\n"
+	"Constant variables that are included in the variable list are pi and e.\n"
+	"Letters that cannot be used to store variables are 'H', 'L' and 'Q'.\n"
+	"Typing \"help\" or \"H\" displays this help message, typing \"quit\" or Q will \n"
+	"cause the program to exit.\n";
 
 Token Token_stream::get()
 {
@@ -95,14 +109,13 @@ Token Token_stream::get()
 	
 	char ch;
 	ch = cin.get();
-	cout << "is space" << isspace(' ') << isspace('\n') << "\n";
-	cout << "Read " <<  ch << " " << isspace(ch) << " " << (ch==' ') << " " <<  (ch=='\n') << "\n";
-	//cin.unget();
-
-	//if (isspace(ch))
-	//	if (ch != '\n')
-	//		ch = cin.get();
-
+	
+	while (isspace(ch)) {
+		if (ch == '\n')
+			return Token(print);
+		ch = cin.get();
+	}
+		
 	switch (ch) {
 	case quitchar : 
 	case helpchar : 
@@ -118,21 +131,21 @@ Token Token_stream::get()
 	case '%':
 	case '!':
 	case '=':
-	case ' ':
+	case ',':
 		return Token(ch);	
 	case '.':
 	case '0': case '1': case '2': case '3': case '4': 
 	case '5': case '6': case '7': case '8': case '9':
 	{	
+		// read in the entire number for these cases
 		cin.unget();
 		double val;
 		cin >> val;
 		return Token(number, val);
 	}
-	case '\n':
+	case '\n':		
 		return Token(print);
 	default:
-		//std::cout << "in default" << std::endl;		
 		if (isalpha(ch) || ch=='_') {
 			string s;
 			s += ch;
@@ -141,6 +154,9 @@ Token Token_stream::get()
 			if (s == declkey) return Token(let);		
 			if (s == quit) return Token(quitchar);
 			if (s == help) return Token(helpchar);
+			if (s == powstr) return Token(powchar);
+			if (s == sqrtstr) return Token(sqrtchar);
+			if (s == sinstr) return Token(sinchar);
 			
 			return Token(name, s);			
 		}
@@ -219,6 +235,9 @@ bool Symbol_table::is_declared(string s)
 }
 
 void Symbol_table::declare(string s, double d, bool b)
+	// function checks if string s has been declared as name, if not, it adds 
+	// a new Variable with that name to the var_table member of the 
+	// Symbol_table object
 {
 	if (is_declared(s)) {
 		return;
@@ -247,7 +266,7 @@ double postprimary();
 double primary()
 {
 	Token t = ts.get();	
-	Token next = Token('+');
+	Token next = Token('+'); // dummy Token
 	switch (t.kind) {
 	case '(':
 	{	
@@ -270,6 +289,8 @@ double primary()
 	case number:		
 		return t.value;
 	case name:
+		// check for assignment operator '='; 
+		// if check is true, set variable name to value d
 		next = ts.get();
 		if (next.kind == '=') {
 			double d = expression();
@@ -288,35 +309,39 @@ double primary()
 
 double term()
 {
-	double left = postprimary();
-	//double left = primary();
+	double left = postprimary();	
 	Token t = ts.get();
 	
 	while (true) {		
 		switch (t.kind) {
 		case '*':
-		{
-			left *= postprimary();
-			//left *= primary();
-			t = ts.get();
-			break;
-			//return left;			
-		}			
+			{
+				left *= postprimary();			
+				t = ts.get();
+				break;			
+			}			
 		case '/':		
-		{
-			double d = postprimary();
-			//double d = postprimary();
-			if (d == 0) error("divide by zero");
-			left /= d;
-			t = ts.get();
-			break;
-		}			
+			{
+				double d = postprimary();			
+				if (d == 0) error("divide by zero");
+				left /= d;
+				t = ts.get();
+				break;
+			}	
+		case '%':
+			{
+				int i1 = int(left);
+				int i2 = int(postprimary());
+				if (i2 == 0) error("%: divide by zero");
+				left = i1%i2;
+				t = ts.get();
+				break;
+			}
 		default:
-		{
-			ts.unget(t);
-			return left;
-		}
-			
+			{
+				ts.unget(t);
+				return left;
+			}			
 		}
 	}
 }
@@ -348,18 +373,65 @@ double expression()
 		case '+':
 			left += term();
 			t = ts.get();
-			break;
-			//return left;			
+			break;						
 		case '-':
 			left -= term();
 			t = ts.get();
-			break; 
-			//return left;
+			break; 			
 		default:
 			ts.unget(t);
 			return left;
 		}
 	}
+}
+
+double sine()
+	// Function computes the sine of a certain value, input in radians
+{
+	double left = expression();	
+	return sin(left);
+}
+
+double squareroot()
+{
+	double left = expression();
+	
+	return sqrt(left);
+}
+
+double power()
+	// Function computes the value of the expression of the type x^i
+{
+	
+	Token t = ts.get();
+	if (t.kind != '(') error("no opening parenthesis found in pow(x,i) call.");
+		
+	double left = term();
+	
+	Token t2 = ts.get();
+	if (t2.kind != ',') error("no comma found in pow(x,i) call.");
+			
+	int exppower = int(expression());
+	
+	Token t3 = ts.get();
+	if (t3.kind != ')') error("no closing parenthesis found in pow(x,i) call.");
+
+	if (exppower > 0) {
+		for (int i = 1; i < exppower; ++i) {
+			left *= left;
+		}
+	}
+	else if (exppower < 0) {
+		for (int i = -1; i > exppower; --i) {
+			left *= left;
+		}
+		left = 1 / left;
+	}
+	else {
+		left = 1.0;
+	}
+	return left;
+
 }
 
 double declaration()
@@ -393,6 +465,12 @@ double statement()
 	switch (t.kind) {
 	case let:
 		return declaration();
+	case powchar:
+		return power();
+	case sinchar:
+		return sine();
+	case sqrtchar:
+		return squareroot();
 	default:
 		ts.unget(t);
 		return expression();
