@@ -1,4 +1,3 @@
-
 /*
 	Calculator.cpp
 
@@ -50,6 +49,7 @@ struct Token {
 	char kind;		// kind of token
 	double value;	// value of number tokens
 	string name;	// name of token
+	
 	Token(char ch) :kind(ch), value(0) { }
 	Token(char ch, double val) :kind(ch), value(val) { }
 	Token(char ch, string str) :kind(ch), name(str) { }
@@ -64,7 +64,7 @@ public:
 	void ignore(char c);								// ignore non c Tokens
 
 private:
-	bool full;		// returns true if the buffer is filled
+	bool full;		// true if the buffer is filled
 	Token buffer;	// the Token in the buffer
 };
 
@@ -74,35 +74,40 @@ const char quitchar = 'Q';
 const char print = ';';
 const char number = '8';
 const char name = 'a';
-const char powchar = 'p';
-const char sqrtchar = 'v';
-const char sinchar = 's';
 
-const string ans_string = "ans";
-const string powstr = "pow";
-const string sqrtstr = "sqrt";
-const string sinstr = "sin";
-const string declkey = "let";
-const string pi_string = "pi";
+const char pchar = 'p';
+const char vchar = 'v';
+const char schar = 's';
+
+const string ans = "ans";
 const string e_string = "e";
-const string quit = "quit";
+const string pi_string = "pi";
+const string pow_string = "pow";
+const string sqrt_string = "sqrt";
+const string sin_string = "sin";
+
+const string declkey = "let";
 const string help = "help";
-//const string newline = "\n";
 const string prompt = "> ";
-//const string result = "= ";
+const string quit = "quit";
 
 const string help_message =
 	"This executable is a simple calculator implementation.\n\n"
-	"Supported operations are addition (+), subtraction (-), multiplication (*)\n"
-	"division (/), modulo (%) and factorial (!). For % and !, doubles will be \n"
-	"converted to integers).\n"
-	"Pressing [Enter], and or writing the '\n' newline or ';' characters will \n"
-	"yield evaluation of the expressions.\n"
+	"Supported operations are:\n"
+	" addition (+), subtraction (-), multiplication (*), division (/) \n"
+	" taking the square root of x \"sqrt(x)\", exponential x^i \"pow(x,i)\", \n"
+	" the sine of x \"sin(x)\" (with x in radians), taking the modulo (%) \n"
+	" and factorial (!). For % and !, doubles will be converted to integers). \n"
+	"By pressing [Enter], and or writing the '\n' newline or ';' characters \n"
+	"the expressions will be evaluated.\n"
 	"\n"
-	"Constant variables that are included in the variable list are pi and e.\n"
-	"Letters that cannot be used to store variables are 'H', 'L' and 'Q'.\n"
-	"Typing \"help\" or \"H\" displays this help message, typing \"quit\" or Q will \n"
-	"cause the program to exit.\n";
+	"Constant variables that are included in the variable list are \"pi\" and "
+	"\"e\". The result of the last expression will be saved to variable \"ans\". "
+	"Letters that cannot be used to store variables are 'H', 'L' and 'Q'. \n"
+	"\n"
+	"Typing \"help\" or \"H\" displays this help message, typing \"quit\" or Q \n"
+	"will cause the program to exit. When errors are thrown, type in ';' and \n"
+	"[Enter] to continue with a new prompt.\n";
 
 Token Token_stream::get()
 {
@@ -120,9 +125,7 @@ Token Token_stream::get()
 		ch = cin.get();
 	}
 		
-	switch (ch) {
-	case quitchar : 
-	case helpchar : 
+	switch (ch) {	 
 	case print : 	
 	case '(':
 	case ')':
@@ -154,9 +157,9 @@ Token Token_stream::get()
 			if (s == declkey) return Token(let);		
 			if (s == quit) return Token(quitchar);
 			if (s == help) return Token(helpchar);
-			if (s == powstr) return Token(powchar);
-			if (s == sqrtstr) return Token(sqrtchar);
-			if (s == sinstr) return Token(sinchar);
+			if (s == pow_string) return Token(pchar);
+			if (s == sqrt_string) return Token(vchar);
+			if (s == sin_string) return Token(schar);
 			
 			return Token(name, s);			
 		}
@@ -264,9 +267,9 @@ Symbol_table symtab;
 double expression();
 double postprimary();
 double statement();
-double sine();
-double squareroot();
-double power();
+double f_sin();
+double f_sqrt();
+double f_pow();
 
 double primary()
 {
@@ -277,14 +280,14 @@ double primary()
 	{	
 		double d = expression();
 		t = ts.get();
-		if (t.kind != ')') error("')' expected");
+		if (t.kind != ')') error("')' expected.");
 		return d;		
 	}
 	case '{':
 	{	
 		double d = expression();
 		t = ts.get();
-		if (t.kind != '}') error("'}' expected");
+		if (t.kind != '}') error("'}' expected.");
 		return d;
 	}
 	case '-':
@@ -293,12 +296,12 @@ double primary()
 		return +primary();
 	case number:		
 		return t.value;
-	case powchar:
-		return power();
-	case sinchar:
-		return sine();
-	case sqrtchar:
-		return squareroot();
+	case pchar:
+		return f_pow();
+	case schar:
+		return f_sin();
+	case vchar:
+		return f_sqrt();
 	case name:
 		// check for assignment operator '='; 
 		// if check is true, set variable name to value d
@@ -396,22 +399,25 @@ double expression()
 	}
 }
 
-double sine()
+double f_sin()
 	// Function computes the sine of a certain value, input in radians
 {
 	double left = primary();	
 	return sin(left);
 }
 
-double squareroot()
+double f_sqrt()
 {
 	double left = primary();
-	if (left < 0) error("sqrt: value to take square root of is negative.");
+	if (left < 0) {
+		error("sqrt: value to take square root of is negative.");
+	}	
 	return sqrt(left);
 }
 
-double power()
-	// Function computes the value of the expression of the type x^i
+double f_pow()
+	// Function returns the value of x to the power i, where x and i are read in 
+	// from the Token_stream
 {
 	
 	Token t = ts.get();
@@ -422,43 +428,43 @@ double power()
 	Token t2 = ts.get();
 	if (t2.kind != ',') error("no comma found in pow(x,i) call.");
 			
-	int exppower = int(expression());
+	double exppower = expression();
 	
 	Token t3 = ts.get();
 	if (t3.kind != ')') error("no closing parenthesis found in pow(x,i) call.");
 
 	return pow(left, exppower);
-
-
 }
 
 double declaration()
-	// function that handles the declaration of variables
-	// handle: name = expression
-	// declare a variable called "name" with the inital value "expression"
+	// Function that handles the declaration of variables named "name" with 
+	// their inital values "expression()". The name and value are read in from the
+	// Token_stream.
 {	
 	Token t = ts.get();	
 	
 	if (t.kind != name && t.kind != '_') error("name expected in declaration");
-	string var_name = t.name;
 	
+	string var_name = t.name;	
 	if (symtab.is_declared(var_name)) error(var_name, " declared twice");
 	
 	Token t2 = ts.get();	
 	if (t2.kind != '=') error("= missing in declaration of ", var_name);
 	
 	double d = expression();		
-	if (symtab.is_declared(var_name))
-		symtab.set(var_name, d);
-	else
-		symtab.declare(var_name, d);
-		symtab.set(var_name, d);
+	
+	// if undeclared var_name, declare now
+	if (~symtab.is_declared(var_name))
+		symtab.declare(var_name, d);		
+	symtab.set(var_name, d);
 	
 	return d;
 }
 
 double statement()
-{
+	// Checks if a statement is a declaration or an expression, and returns the 
+	// value of the statement.
+{	
 	Token t = ts.get();
 	switch (t.kind) {
 	case let:
@@ -490,7 +496,7 @@ void calculate()
 			if (t.kind == quitchar)	return;
 			ts.unget(t);
 			double stat = statement();
-			symtab.set(ans_string, stat);
+			symtab.set(ans, stat);
 			cout << stat << endl;
 		}		
 		
@@ -504,7 +510,7 @@ void calculate()
 int main() {
 
 	// add constant values
-	symtab.declare(ans_string, 0.0);
+	symtab.declare(ans, 0.0);
 	symtab.declare(pi_string, M_PI, true);
 	symtab.declare(e_string, M_E, true);
 
