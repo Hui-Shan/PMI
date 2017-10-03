@@ -3,7 +3,8 @@
 	Calculator.cpp
 
 	Revision history:
-		Initial version from buggy...
+		Initial version from calculator08buggy.cpp
+		Revised by HMC October 2017			
 
 	This program implements a basic expression calculator. 
 	Input from cin; output to cout.
@@ -77,6 +78,7 @@ const char powchar = 'p';
 const char sqrtchar = 'v';
 const char sinchar = 's';
 
+const string ans_string = "ans";
 const string powstr = "pow";
 const string sqrtstr = "sqrt";
 const string sinstr = "sin";
@@ -85,7 +87,9 @@ const string pi_string = "pi";
 const string e_string = "e";
 const string quit = "quit";
 const string help = "help";
-const string newline = "\n";
+//const string newline = "\n";
+const string prompt = "> ";
+//const string result = "= ";
 
 const string help_message =
 	"This executable is a simple calculator implementation.\n\n"
@@ -135,16 +139,12 @@ Token Token_stream::get()
 		return Token(ch);	
 	case '.':
 	case '0': case '1': case '2': case '3': case '4': 
-	case '5': case '6': case '7': case '8': case '9':
-	{	
+	case '5': case '6': case '7': case '8': case '9':		
 		// read in the entire number for these cases
 		cin.unget();
 		double val;
-		cin >> val;
-		return Token(number, val);
-	}
-	case '\n':		
-		return Token(print);
+		cin >> val;		 
+		return Token(number, val);	
 	default:
 		if (isalpha(ch) || ch=='_') {
 			string s;
@@ -190,7 +190,7 @@ struct Variable {
 
 class Symbol_table {
 	
-public: 
+public:
 	double get(string var_name);
 	void set(string s, double d, bool b=false);
 	bool is_declared(string s);
@@ -202,7 +202,7 @@ private:
 };
 
 double Symbol_table::get(string s)
-// returns the value of the Variable with name s
+	// returns the value of the Variable with name s
 {
 	for (int i = 0; i < var_table.size(); ++i)
 		if (var_table[i].name == s) return var_table[i].value;
@@ -212,16 +212,17 @@ double Symbol_table::get(string s)
 void Symbol_table::set(string s, double d, bool b)
 	// sets the value of the Variable named s to d
 {	
-	for (int i = 0; i < var_table.size(); ++i)
+	for (int i = 0; i<var_table.size(); ++i) {
 		if (var_table[i].name == s) {
 			if (var_table[i].constant == false) {
 				var_table[i].value = d;
 			}
 			else {
-				cout << "Cannot change value of constant variable.\n";				
+				cout << "Cannot change value of constant variable.\n";
 			}
 			return;
 		}
+	}		
 	error("set: undefined name ", s);
 }
 
@@ -262,6 +263,10 @@ Symbol_table symtab;
 
 double expression();
 double postprimary();
+double statement();
+double sine();
+double squareroot();
+double power();
 
 double primary()
 {
@@ -285,9 +290,15 @@ double primary()
 	case '-':
 		return -primary();
 	case '+':
-		return -primary();
+		return +primary();
 	case number:		
 		return t.value;
+	case powchar:
+		return power();
+	case sinchar:
+		return sine();
+	case sqrtchar:
+		return squareroot();
 	case name:
 		// check for assignment operator '='; 
 		// if check is true, set variable name to value d
@@ -388,14 +399,14 @@ double expression()
 double sine()
 	// Function computes the sine of a certain value, input in radians
 {
-	double left = expression();	
+	double left = primary();	
 	return sin(left);
 }
 
 double squareroot()
 {
-	double left = expression();
-	
+	double left = primary();
+	if (left < 0) error("sqrt: value to take square root of is negative.");
 	return sqrt(left);
 }
 
@@ -406,7 +417,7 @@ double power()
 	Token t = ts.get();
 	if (t.kind != '(') error("no opening parenthesis found in pow(x,i) call.");
 		
-	double left = term();
+	double left = statement();
 	
 	Token t2 = ts.get();
 	if (t2.kind != ',') error("no comma found in pow(x,i) call.");
@@ -416,21 +427,8 @@ double power()
 	Token t3 = ts.get();
 	if (t3.kind != ')') error("no closing parenthesis found in pow(x,i) call.");
 
-	if (exppower > 0) {
-		for (int i = 1; i < exppower; ++i) {
-			left *= left;
-		}
-	}
-	else if (exppower < 0) {
-		for (int i = -1; i > exppower; --i) {
-			left *= left;
-		}
-		left = 1 / left;
-	}
-	else {
-		left = 1.0;
-	}
-	return left;
+	return pow(left, exppower);
+
 
 }
 
@@ -465,12 +463,6 @@ double statement()
 	switch (t.kind) {
 	case let:
 		return declaration();
-	case powchar:
-		return power();
-	case sinchar:
-		return sine();
-	case sqrtchar:
-		return squareroot();
 	default:
 		ts.unget(t);
 		return expression();
@@ -482,8 +474,7 @@ void clean_up_mess()
 	ts.ignore(print);
 }
 
-const string prompt = "> ";
-const string result = "= ";
+
 
 void calculate()
 {
@@ -491,17 +482,17 @@ void calculate()
 	try {
 		cout << prompt;
 		Token t = ts.get();
-		while (t.kind == print) t = ts.get();
+		while (t.kind == print) t = ts.get();		
 		if (t.kind == helpchar){
 			cout << help_message;
 		}
 		else {
 			if (t.kind == quitchar)	return;
 			ts.unget(t);
-			cout << statement() << endl;
-		}
-		
-
+			double stat = statement();
+			symtab.set(ans_string, stat);
+			cout << stat << endl;
+		}		
 		
 	}
 	catch (runtime_error& e) {
@@ -513,6 +504,7 @@ void calculate()
 int main() {
 
 	// add constant values
+	symtab.declare(ans_string, 0.0);
 	symtab.declare(pi_string, M_PI, true);
 	symtab.declare(e_string, M_E, true);
 
