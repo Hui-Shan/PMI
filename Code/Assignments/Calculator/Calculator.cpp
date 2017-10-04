@@ -96,15 +96,18 @@ const string help_message =
 	"Supported operations are addition (+), subtraction (-), multiplication (*)\n"
 	"division (/), modulo (%) and factorial (!). For % and !, doubles will be \n"
 	"converted to integers).\n"
-	"Pressing [Enter], and or writing the '\n' newline or ';' characters will \n"
-	"yield evaluation of the expressions.\n"
+	"Pressing [Enter] yields evaluation of the expression on the current line.\n"
+	"Multiple expression can be separated by ';'.\n"
+	"When an exception or error occurs, and no new prompt is shown, type \";\""
+	"followed by [Enter].\n"
 	"\n"
 	"Constant variables that are included in the variable list are pi and e.\n"
-	"Letters that cannot be used to store variables are 'H', 'L' and 'Q'.\n"
+	"Variables cannot start with the characters 'H', 'L' or 'Q'.\n"
 	"Typing \"help\" or \"H\" displays this help message, typing \"quit\" or Q will \n"
 	"cause the program to exit.\n";
 
 Token Token_stream::get()
+	// handles character input of the Token_s
 {
 	if (full) { 
 		full = false; 
@@ -112,10 +115,9 @@ Token Token_stream::get()
 	}
 	
 	char ch;
-	ch = cin.get();
-	
+	ch = cin.get();	
 	while (isspace(ch)) {
-		if (ch == '\n')
+		if (ch == '\n')			
 			return Token(print);
 		ch = cin.get();
 	}
@@ -135,8 +137,8 @@ Token Token_stream::get()
 	case '%':
 	case '!':
 	case '=':
-	case ',':
-		return Token(ch);	
+	case ',':		
+		return Token(ch);		
 	case '.':
 	case '0': case '1': case '2': case '3': case '4': 
 	case '5': case '6': case '7': case '8': case '9':		
@@ -211,11 +213,11 @@ double Symbol_table::get(string s)
 
 void Symbol_table::set(string s, double d, bool b)
 	// sets the value of the Variable named s to d
-{	
+{		
 	for (int i = 0; i<var_table.size(); ++i) {
 		if (var_table[i].name == s) {
 			if (var_table[i].constant == false) {
-				var_table[i].value = d;
+				var_table[i].value = d;				
 			}
 			else {
 				cout << "Cannot change value of constant variable.\n";
@@ -270,8 +272,7 @@ double power();
 
 double primary()
 {
-	Token t = ts.get();	
-	Token next = Token('+'); // dummy Token
+	Token t = ts.get();		
 	switch (t.kind) {
 	case '(':
 	{	
@@ -298,11 +299,20 @@ double primary()
 	case sinchar:
 		return sine();
 	case sqrtchar:
-		return squareroot();
+	{	
+		double arg = primary();				
+		if (arg < 0) {
+			error("sqrt: taking the square root of a negative number.");
+			//t = ts.get();
+		}
+		
+		return sqrt(arg);
+	}
 	case name:
+	{
 		// check for assignment operator '='; 
 		// if check is true, set variable name to value d
-		next = ts.get();
+		Token next = ts.get();
 		if (next.kind == '=') {
 			double d = expression();
 			symtab.set(t.name, d);
@@ -311,8 +321,8 @@ double primary()
 		else {
 			ts.unget(next);
 			return symtab.get(t.name);
-		}
-			
+		}		
+	}			
 	default:
 		error("primary expected");		
 	}
@@ -343,7 +353,7 @@ double term()
 			{
 				int i1 = int(left);
 				int i2 = int(postprimary());
-				if (i2 == 0) error("%: divide by zero");
+				if (i2 == 0) error("%: modulo of zero");
 				left = i1%i2;
 				t = ts.get();
 				break;
@@ -403,12 +413,12 @@ double sine()
 	return sin(left);
 }
 
-double squareroot()
+/*double squareroot(arg)
 {
 	double left = primary();
 	if (left < 0) error("sqrt: value to take square root of is negative.");
 	return sqrt(left);
-}
+}*/
 
 double power()
 	// Function computes the value of the expression of the type x^i
@@ -422,14 +432,12 @@ double power()
 	Token t2 = ts.get();
 	if (t2.kind != ',') error("no comma found in pow(x,i) call.");
 			
-	int exppower = int(expression());
+	double exppower = expression();
 	
 	Token t3 = ts.get();
 	if (t3.kind != ')') error("no closing parenthesis found in pow(x,i) call.");
 
 	return pow(left, exppower);
-
-
 }
 
 double declaration()
