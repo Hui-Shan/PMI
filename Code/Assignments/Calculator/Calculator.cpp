@@ -82,7 +82,6 @@ const char schar = 's';
 const string ans = "ans";
 const string e_string = "e";
 const string pi_string = "pi";
-const string pow_string = "pow";
 const string sqrt_string = "sqrt";
 const string sin_string = "sin";
 
@@ -90,10 +89,10 @@ const string declkey = "let";
 const string help = "help";
 const string prompt = "> ";
 const string quit = "quit";
+const string showvar = "showvar";
 
 const string help_message =
 	"This executable is a simple calculator implementation.\n\n"
-<<<<<<< HEAD
 	"Supported operations are addition (+), subtraction (-), multiplication (*)\n"
 	"division (/), modulo (%) and factorial (!). For % and !, doubles will be \n"
 	"converted to integers).\n"
@@ -101,13 +100,11 @@ const string help_message =
 	"Multiple expression can be separated by ';'.\n"
 	"When an exception or error occurs, and no new prompt is shown, type \";\""
 	"followed by [Enter].\n"
-||||||| merged common ancestors
 	"Supported operations are addition (+), subtraction (-), multiplication (*)\n"
 	"division (/), modulo (%) and factorial (!). For % and !, doubles will be \n"
 	"converted to integers).\n"
-	"Pressing [Enter], and or writing the '\n' newline or ';' characters will \n"
+	"Pressing [Enter], and or writing the \'\n\' newline or ';' characters will \n"
 	"yield evaluation of the expressions.\n"
-=======
 	"Supported operations are:\n"
 	" addition (+), subtraction (-), multiplication (*), division (/) \n"
 	" taking the square root of x \"sqrt(x)\", exponential x^i \"pow(x,i)\", \n"
@@ -115,27 +112,14 @@ const string help_message =
 	" and factorial (!). For % and !, doubles will be converted to integers). \n"
 	"By pressing [Enter], and or writing the '\n' newline or ';' characters \n"
 	"the expressions will be evaluated.\n"
->>>>>>> c57ec0cbc662e79f4a71a24dab855b606c1a2afe
 	"\n"
-<<<<<<< HEAD
-	"Constant variables that are included in the variable list are pi and e.\n"
-	"Variables cannot start with the characters 'H', 'L' or 'Q'.\n"
-	"Typing \"help\" or \"H\" displays this help message, typing \"quit\" or Q will \n"
-	"cause the program to exit.\n";
-||||||| merged common ancestors
-	"Constant variables that are included in the variable list are pi and e.\n"
-	"Letters that cannot be used to store variables are 'H', 'L' and 'Q'.\n"
-	"Typing \"help\" or \"H\" displays this help message, typing \"quit\" or Q will \n"
-	"cause the program to exit.\n";
-=======
-	"Constant variables that are included in the variable list are \"pi\" and "
-	"\"e\". The result of the last expression will be saved to variable \"ans\". "
-	"Letters that cannot be used to store variables are 'H', 'L' and 'Q'. \n"
-	"\n"
+	"Constant variables that are included in the variable list are pi and e.\n"	
+	"Typing \"help\" displays this help message, typing \"quit\" will \n"
+	"cause the program to exit.\n"	
 	"Typing \"help\" or \"H\" displays this help message, typing \"quit\" or Q \n"
 	"will cause the program to exit. When errors are thrown, type in ';' and \n"
 	"[Enter] to continue with a new prompt.\n";
->>>>>>> c57ec0cbc662e79f4a71a24dab855b606c1a2afe
+
 
 Token Token_stream::get()
 	// handles character input of the Token_s
@@ -166,16 +150,19 @@ Token Token_stream::get()
 	case '%':
 	case '!':
 	case '=':
-	case ',':		
+	case ',':
+	case '^':
 		return Token(ch);		
 	case '.':
 	case '0': case '1': case '2': case '3': case '4': 
 	case '5': case '6': case '7': case '8': case '9':		
+	{
 		// read in the entire number for these cases
 		cin.unget();
 		double val;
-		cin >> val;		 
-		return Token(number, val);	
+		cin >> val;
+		return Token(number, val);
+	}		
 	default:
 		if (isalpha(ch) || ch=='_') {
 			string s;
@@ -183,11 +170,10 @@ Token Token_stream::get()
 			while (cin.get(ch) && (isalpha(ch) || isdigit(ch) || ch=='_')) s += ch;
 			cin.unget();
 			if (s == declkey) return Token(let);		
-			if (s == quit) return Token(quitchar);
-			if (s == help) return Token(helpchar);
-			if (s == pow_string) return Token(pchar);
-			if (s == sqrt_string) return Token(vchar);
-			if (s == sin_string) return Token(schar);
+			else if (s == quit) return Token(quitchar);
+			else if (s == help) return Token(helpchar);			
+			else if (s == sqrt_string) return Token(vchar);
+			else if (s == sin_string) return Token(schar);
 			
 			return Token(name, s);			
 		}
@@ -323,36 +309,16 @@ double primary()
 		return +primary();
 	case number:		
 		return t.value;
-<<<<<<< HEAD
-	case powchar:
-		return power();
-	case sinchar:
-		return sine();
-	case sqrtchar:
-	{	
-		double arg = primary();				
-		if (arg < 0) {
-			error("sqrt: taking the square root of a negative number.");
-			//t = ts.get();
-		}
-		
-		return sqrt(arg);
-	}
-||||||| merged common ancestors
-	case powchar:
-		return power();
-	case sinchar:
-		return sine();
-	case sqrtchar:
-		return squareroot();
-=======
-	case pchar:
-		return f_pow();
 	case schar:
 		return f_sin();
 	case vchar:
-		return f_sqrt();
->>>>>>> c57ec0cbc662e79f4a71a24dab855b606c1a2afe
+	{	
+		double arg = primary();				
+		if (arg < 0) {
+			error("sqrt: cannot take the square root of a negative number.");			
+		}		
+		return sqrt(arg);
+	}
 	case name:
 	{
 		// check for assignment operator '='; 
@@ -369,7 +335,7 @@ double primary()
 		}		
 	}			
 	default:
-		error("primary expected");		
+		error("primary expected");
 	}
 }
 
@@ -403,6 +369,13 @@ double term()
 				t = ts.get();
 				break;
 			}
+		case '^':
+		{
+			double p = postprimary();			
+			left = pow(left, p);
+			t = ts.get();
+			break;
+		}
 		default:
 			{
 				ts.unget(t);
@@ -458,41 +431,13 @@ double f_sin()
 	return sin(left);
 }
 
-<<<<<<< HEAD
-/*double squareroot(arg)
-||||||| merged common ancestors
-double squareroot()
-=======
+
 double f_sqrt()
->>>>>>> c57ec0cbc662e79f4a71a24dab855b606c1a2afe
 {
-	double left = primary();
-	if (left < 0) {
-		error("sqrt: value to take square root of is negative.");
-	}	
+	double left = primary();	
 	return sqrt(left);
-}*/
-
-double f_pow()
-	// Function returns the value of x to the power i, where x and i are read in 
-	// from the Token_stream
-{
-	
-	Token t = ts.get();
-	if (t.kind != '(') error("no opening parenthesis found in pow(x,i) call.");
-		
-	double left = statement();
-	
-	Token t2 = ts.get();
-	if (t2.kind != ',') error("no comma found in pow(x,i) call.");
-			
-	double exppower = expression();
-	
-	Token t3 = ts.get();
-	if (t3.kind != ')') error("no closing parenthesis found in pow(x,i) call.");
-
-	return pow(left, exppower);
 }
+
 
 double declaration()
 	// Function that handles the declaration of variables named "name" with 
