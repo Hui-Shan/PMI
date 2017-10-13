@@ -2,17 +2,63 @@
 #include <string>
 #include <iostream>
 
+class Name_pair {
+public:
+	// constructor declaration
+	Name_pair(string na, double ag);
+
+	// non-modifying operations, as inline functions
+	string get_name() const { return name; } 
+	double get_age() const { return age; }
+
+private:
+	string name;
+	double age;
+
+};
+
+
+Name_pair::Name_pair(string na, double ag)
+	:name{ na }, age{ ag }
+{
+}
+
+bool operator==(Name_pair one, Name_pair another)
+// Function checks for equality between own and other Name_pair objects
+// Returns true if equal
+{
+	return ((one.get_name() == another.get_name()) && 
+			(one.get_age() == another.get_age()));
+}
+
+bool operator!=(Name_pair one, Name_pair another)
+// Function checks for inequality between own and other Name_pair objects
+// Returns true if unequal
+{
+	return !(one==another);
+}
+
+std::ostream& operator<<(std::ostream& os, Name_pair np) 
+// Function for adding np to outputstream and returning output stream
+{
+	return os << np.get_name() << " (" << np.get_age() << ") ";
+}
+
+
 class Name_pairs {
 private:
 	vector<string> name;
 	vector<double> age;
 
+	
+
 public:
 	void read_names();
 	void read_ages();	
-	std::ostream& operator<<(std::ostream& os);
-	void print();
-	void sort();
+	void sort();	
+
+	vector<string> get_names() { return name; }
+	vector<double> get_ages() { return age; }
 };
 
 void Name_pairs::read_names()
@@ -39,24 +85,24 @@ void Name_pairs::read_ages() {
 	}
 }
 
-std::ostream& Name_pairs::operator<<(ostream& os, const Point& p)
+std::ostream& operator<<(ostream& os, Name_pairs nps)
 	// Function prints out the name, age pairs
 {
-	cout << "So, you mean:\n";
-	for (int i = 0; i < name.size(); ++i) {
-		cout << name[i] << " is " << age[i] << "\n";
+	//cout << "So, you mean:\n";
+	for (int i = 0; i < nps.get_names().size(); ++i) {
+		os << nps.get_names()[i] << " is " << nps.get_ages()[i] << "\n";
 	}
-	return os << "(" << p.x << "," << p.y << ")";
+	return os;
 }
 
-void Name_pairs::print()
+/*void Name_pairs::print()
 // Function prints out the name, age pairs
 {
 	cout << "So, you mean:\n";
 	for (int i = 0; i < name.size(); ++i) {
 		cout << name[i] << " is " << age[i] << "\n";
 	}
-}
+}*/
 
 
 void Name_pairs::sort() 
@@ -84,13 +130,20 @@ void Name_pairs::sort()
 }
 
 int main() {
-	Name_pairs np = Name_pairs();	
-		
-	np.read_names();
-	np.read_ages();
+	
+	/*string n = "Eliza";
+	double a = 29.;
+	Name_pair np = Name_pair(n, a);
+	
+	cout << np;*/
 
-	np.sort();
-	cout << np;
+	Name_pairs nps = Name_pairs();	
+		
+	nps.read_names();
+	nps.read_ages();
+
+	nps.sort();
+	cout << nps;
 
 	keep_window_open();
 	
