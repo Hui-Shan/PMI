@@ -1,0 +1,5 @@
+MHD:
+NDims = 3
+DimSize = 109 91 80 
+ElementType = MET_SHORT
+ElementDataFile = brain_out.raw
