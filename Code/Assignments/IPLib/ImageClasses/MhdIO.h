@@ -1,15 +1,43 @@
-#include "ImageIOBase.h"
+//#include "ImageIOBase.h"
+//#include <array>
+
+const string ndims_str = "NDims";
+const string eldatfile_str = "ElementDataFile";
+const string dimsize_str = "DimSize";
+const string eltype_str = "ElementType";
+const string equals_str = " = ";
+
+const string MET_SHORT = "MET_SHORT";
+const string int16 = "int16";
+const string path_separator = "/";
+
+
 // Derived class MhdIO
 class MhdIO : ImageIOBase
 {
 public:
 	vector<short> read() override;
 	void write(const array<int, N_DIM>&, const vector<short>&) override;
+	MhdIO(string file_in) : ImageIOBase (file_in) { filename = file_in; };
 private:
 	string get_relative_filepath();
+	string MhdIO::get_filename(string fullinputfile);
 };
 
+
 // Functions for MhdIO
+string MhdIO::get_filename(string fullinputfile)
+// Get filename without path
+{
+	string short_filename = fullinputfile;
+	bool folder_in_filename = (fullinputfile.find(path_separator) != -1);
+	if (folder_in_filename) {
+		int path_idx = fullinputfile.find_last_of(path_separator) + 1;
+		short_filename = fullinputfile.substr(path_idx);
+	}
+	return short_filename;
+}
+
 string MhdIO::get_relative_filepath()
 	// Get relative folder path of filename if present
 {
@@ -45,7 +73,7 @@ vector<short> MhdIO::read()
 
 	// Get relative folder path of filename if present
 	file_path = get_relative_filepath();
-
+	cout << file_path << "\n";
 	// Read in the number of dimensions, the dimension sizes, the element type
 	// and the name of the .raw file
 	while (!ifs_mhd.eof()) {
@@ -103,4 +131,35 @@ vector<short> MhdIO::read()
 	if (num_voxels_read != dim_product) error("Number of voxels incorrect\n");
 
 	return image_vec;
+}
+
+void MhdIO::write(const array<int, N_DIM>& dimensions, const vector<short>& image)
+{
+	// Open .mhd output filestream
+	ofstream ofs_mhd{ filename };
+	if (!ofs_mhd) error("Could not open " + filename + "for output\n");
+
+	int ndims = dimensions.size();
+	string raw_filename = filename.substr(0, filename.size() - 4) + ".raw";
+	stringstream dimensions_in;
+	for (int dim : dimensions) {
+		dimensions_in << dim << " ";
+	}
+
+	// Write .mhd file
+	ofs_mhd << "MHD:\n";
+	ofs_mhd << ndims_str << equals_str << ndims << "\n";
+	ofs_mhd << dimsize_str << equals_str << dimensions_in.str() << "\n";
+	ofs_mhd << eltype_str << equals_str << MET_SHORT << "\n";
+	ofs_mhd << eldatfile_str << equals_str << get_filename(raw_filename) << "\n";
+
+	// Open .raw output filestream	
+	ofstream ofs_raw{ raw_filename, ios_base::binary };
+	if (!ofs_raw) error("Could not open " + raw_filename + "for output\n");
+
+	// and write image values to .raw file	
+	for (short val : image) {
+		ofs_raw.write(as_bytes(val), sizeof(short));
+	}
+
 }
