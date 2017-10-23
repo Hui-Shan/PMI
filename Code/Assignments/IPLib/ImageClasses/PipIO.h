@@ -1,4 +1,8 @@
-#include "ImageIOBase.h"
+// Define constant values for data types
+const unsigned char uchar_type = 1;
+const unsigned char short_type = 2;
+const unsigned char int_type = 3;
+const unsigned char double_type = 4;
 
 // Derived class PipIO
 class PipIO : public ImageIOBase
@@ -7,7 +11,7 @@ public:
 	PipIO(string file_in) : ImageIOBase(file_in) { filename = file_in; };
 	vector<short> read() override;
 	void write(const array<int, N_DIM>&, const vector<short>&) override;
-
+	string get_filename() { return filename; };
 protected:
 	string filename;
 
@@ -56,3 +60,24 @@ vector<short> PipIO::read()
 
 	return image_vec;
 }
+
+void PipIO::write(const array<int, N_DIM>& dimensions, const vector<short>& image)
+	// Function writes pip image to filename
+{
+	ofstream ofs{ filename, ios_base::binary };
+	if (!ofs) error("Could not open the output file ", filename);
+
+	// Write data type
+	ofs.write(as_bytes(short_type), sizeof(unsigned char));
+
+	// Write image dimensions		
+	for (int dim : dimensions) {
+		ofs.write(as_bytes(dim), sizeof(int));
+	}
+
+	// Write image values
+	for (short val : image) {
+		ofs.write(as_bytes(val), sizeof(short));
+	}
+}
+
