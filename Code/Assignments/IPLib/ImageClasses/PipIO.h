@@ -1,3 +1,6 @@
+#ifndef PIPIO_H
+#define PIPIO_H
+
 #include "ImageIOBase.h"
 
 namespace hmc {
@@ -86,6 +89,6 @@ namespace hmc {
 		}
 	}
 
-
 }
 
+#endif /* PIPIO_H */

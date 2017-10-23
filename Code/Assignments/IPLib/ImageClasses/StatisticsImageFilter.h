@@ -1,3 +1,6 @@
+#ifndef STATISTICSIMAGEFILTER_H
+#define STATISTICSIMAGEFILTER_H
+
 #include "ImageFilter.h"
 
 namespace hmc {
@@ -59,3 +62,5 @@ namespace hmc {
 	};
 
 }
+
+#endif /* STATISTICSIMAGEFILTER_H */

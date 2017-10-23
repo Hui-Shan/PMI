@@ -1,3 +1,6 @@
+#ifndef MHDIO_H
+#define MHDIO_H
+
 #include "ImageIOBase.h"
 
 namespace hmc {
@@ -160,5 +163,6 @@ namespace hmc {
 		}
 	}
 
-
 }
+
+#endif /* MHDIO_H */

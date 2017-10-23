@@ -1,3 +1,6 @@
+#ifndef THRESHOLDIMAGEFILTER_H
+#define THRESHOLDIMAGEFILTER_H
+
 #include "ImageFilter.h"
 
 namespace hmc {
@@ -36,3 +39,5 @@ namespace hmc {
 	};
 
 }
+
+#endif /* THRESHOLDIMAGEFILTER_H */

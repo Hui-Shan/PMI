@@ -1,3 +1,6 @@
+#ifndef IMAGEIOFACTORY_H
+#define IMAGEIOFACTORY_H
+
 #include "ImageIOBase.h"
 #include "PipIO.h"
 #include "MhdIO.h"
@@ -31,3 +34,4 @@ namespace hmc {
 	}
 }
 
+#endif /* IMAGEIOFACTORY_H */
