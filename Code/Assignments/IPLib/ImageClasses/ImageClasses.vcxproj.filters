@@ -38,5 +38,8 @@
     <ClInclude Include="ThresholdImageFilter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="StatisticsImageFilter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

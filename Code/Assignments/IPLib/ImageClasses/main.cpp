@@ -1,5 +1,8 @@
 #include "ImageIOFactory.h"
 #include "ThresholdImageFilter.h"
+#include "StatisticsImageFilter.h"
+
+using namespace hmc;
 
 int main()
 {
@@ -25,6 +28,11 @@ int main()
 		outfilename = "..//..//data//brain_out_thresholded.pip";
 		io = ImageIOFactory::getIO(outfilename);
 		io->write(image, { 109, 91, 80, 1, 1 }); // image, dimensions
+
+		StatisticsImageFilter sf;
+		sf.setInput(image);
+		//cout << "min " << sf.getMin() << "\n";
+
 		delete io; io = nullptr;
 		cout << "Written image to " << outfilename << "\n";
 		
