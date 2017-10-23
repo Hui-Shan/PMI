@@ -7,10 +7,12 @@
 class ImageIOBase
 {
 public:	
-	virtual ~ImageIOBase() {}
+	// virtual destructor
+	virtual ~ImageIOBase() {}; 
 	
+	// pure virtual read and write functions
 	virtual vector<short> read() = 0;
-	virtual void write(const array<int, N_DIM>&, const vector<short>&) = 0;
+	virtual void write(const vector<short>&, const array<int, N_DIM>&) = 0;
 
 	// don't 'copy construct'
 	ImageIOBase(const ImageIOBase&) = delete;				
@@ -18,8 +20,9 @@ public:
 	// don't 'copy assign'
 	ImageIOBase& operator=(const ImageIOBase&) = delete;	
 
-protected:		
-	ImageIOBase(string file_in) { filename = file_in; };
+protected:	
+	// protected constructor
+	ImageIOBase(string file_in) { filename = file_in; };	
 	string filename;
 
 private:

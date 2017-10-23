@@ -9,9 +9,11 @@ class PipIO : public ImageIOBase
 {
 public:
 	PipIO(string file_in) : ImageIOBase(file_in) { filename = file_in; };
+	
 	vector<short> read() override;
-	void write(const array<int, N_DIM>&, const vector<short>&) override;
+	void write(const vector<short>&, const array<int, N_DIM>&) override;	
 	string get_filename() { return filename; };
+
 protected:
 	string filename;
 
@@ -61,7 +63,7 @@ vector<short> PipIO::read()
 	return image_vec;
 }
 
-void PipIO::write(const array<int, N_DIM>& dimensions, const vector<short>& image)
+void PipIO::write(const vector<short>& image, const array<int, N_DIM>& dimensions)
 	// Function writes pip image to filename
 {
 	ofstream ofs{ filename, ios_base::binary };

@@ -13,12 +13,18 @@ const string path_separator = "/";
 class MhdIO : public ImageIOBase
 {
 public:
+	// Constructo
 	MhdIO(string file_in) : ImageIOBase(file_in) { filename = file_in; };
+	
+	// Read and write functions
 	vector<short> read() override;
-	void write(const array<int, N_DIM>&, const vector<short>&) override;
+	void write(const vector<short>&, const array<int, N_DIM>&) override;
+	
 	string get_filename() { return filename; };
+
 protected:
 	string filename;
+
 private:
 	string get_relative_filepath();
 };
@@ -70,17 +76,14 @@ vector<short> MhdIO::read()
 			remainder = line.substr(equals_idx + 3);
 			if (remainder.size() == 0) error("No value for parameter " + param + "\n");
 			if (param == ndims_str) {
-				ndims = stoi(line.substr(equals_idx + 3));
-				cout << param << " " << ndims << "\n";
+				ndims = stoi(line.substr(equals_idx + 3));				
 			}
 			if (param == dimsize_str) {
 				stringstream ss;
-				ss << remainder;
-				cout << param << " ";
+				ss << remainder;				
 				for (int dim; ss >> dim;) {
 					if (dim < 0) error("Negative dimension found\n");
-					dimsize.push_back(dim);
-					cout << dim << " ";
+					dimsize.push_back(dim);					
 				}
 			}
 			if (param == eltype_str) {
@@ -92,9 +95,7 @@ vector<short> MhdIO::read()
 				datafile = file_path + remainder;
 			}
 		}
-	}
-
-	cout << "Trying to open as .raw file: " << datafile << "\n";
+	}	
 
 	// Open ifstream for the .raw file
 	ifstream ifs_raw{ datafile, ios_base::binary };
@@ -121,25 +122,30 @@ vector<short> MhdIO::read()
 	return image_vec;
 }
 
-void MhdIO::write(const array<int, N_DIM>& dimensions, const vector<short>& image)
+void MhdIO::write(const vector<short>& image, const array<int, N_DIM>& dimensions)
 {
 	// Open .mhd output filestream
 	ofstream ofs_mhd{ filename };
 	if (!ofs_mhd) error("Could not open " + filename + "for output\n");
 
+	// Make string listing dimension sizes
 	int ndims = dimensions.size();
-	string raw_filename = filename.substr(0, filename.size() - 4) + ".raw";
-	stringstream dimensions_in;
+	stringstream dimensions_in;	
 	for (int dim : dimensions) {
 		dimensions_in << dim << " ";
 	}
+
+	// Get full and short filenames for .raw file 
+	string raw_filename = filename.substr(0, filename.size() - 4) + ".raw";
+	int last_slash_index = raw_filename.find_last_of('/');
+	string short_raw_filename = raw_filename.substr(last_slash_index + 1);
 
 	// Write .mhd file
 	ofs_mhd << "MHD:\n";
 	ofs_mhd << ndims_str << equals_str << ndims << "\n";
 	ofs_mhd << dimsize_str << equals_str << dimensions_in.str() << "\n";
 	ofs_mhd << eltype_str << equals_str << MET_SHORT << "\n";
-	ofs_mhd << eldatfile_str << equals_str << filename << "\n";
+	ofs_mhd << eldatfile_str << equals_str << short_raw_filename << "\n";
 
 	// Open .raw output filestream	
 	ofstream ofs_raw{ raw_filename, ios_base::binary };
@@ -149,5 +155,4 @@ void MhdIO::write(const array<int, N_DIM>& dimensions, const vector<short>& imag
 	for (short val : image) {
 		ofs_raw.write(as_bytes(val), sizeof(short));
 	}
-
 }
