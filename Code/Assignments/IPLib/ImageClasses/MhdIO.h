@@ -1,3 +1,5 @@
+#include "ImageIOBase.h"
+
 namespace hmc {
 	// Define constant values
 	const string ndims_str = "NDims";

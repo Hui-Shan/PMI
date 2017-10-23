@@ -1,3 +1,5 @@
+#include "ImageIOBase.h"
+
 namespace hmc {
 	// Define constant values for data types
 	const unsigned char uchar_type = 1;
