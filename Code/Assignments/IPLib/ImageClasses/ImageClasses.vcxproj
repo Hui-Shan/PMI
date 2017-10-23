@@ -114,10 +114,12 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ImageFilter.h" />
     <ClInclude Include="ImageIOBase.h" />
     <ClInclude Include="ImageIOFactory.h" />
     <ClInclude Include="MhdIO.h" />
     <ClInclude Include="PipIO.h" />
+    <ClInclude Include="ThresholdImageFilter.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

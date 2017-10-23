@@ -32,5 +32,11 @@
     <ClInclude Include="PipIO.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ImageFilter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ThresholdImageFilter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
