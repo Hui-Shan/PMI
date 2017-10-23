@@ -1,10 +1,4 @@
-//#include "ImageIOBase.h"
-#include <array>
-
-const unsigned char uchar_type = 1;
-const unsigned char short_type = 2;
-const unsigned char int_type = 3;
-const unsigned char double_type = 4;
+#include "ImageIOBase.h"
 
 // Derived class PipIO
 class PipIO : public ImageIOBase
@@ -61,22 +55,4 @@ vector<short> PipIO::read()
 	if (num_voxels_read != dim_product) error("Number of voxels incorrect\n");
 
 	return image_vec;
-}
-
-void PipIO::write(const array<int, N_DIM>& dimensions, const vector<short>& image) {
-	ofstream ofs{ filename, ios_base::binary };
-	if (!ofs) error("Could not open the output file ", filename);
-
-	// Write data type
-	ofs.write(as_bytes(short_type), sizeof(unsigned char));
-
-	// Write image dimensions	
-	for (const int dim : dimensions) {		
-		ofs.write(as_bytes(dim), sizeof(int));
-	}
-
-	// Write image values
-	for (short val : image) {
-		ofs.write(as_bytes(val), sizeof(short));
-	}
 }
