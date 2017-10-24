@@ -1,6 +1,7 @@
 #include "ImageIOFactory.h"
 #include "ThresholdImageFilter.h"
 #include "StatisticsImageFilter.h"
+#include "MaskImageFilter.h"
 
 using namespace hmc;
 
@@ -48,6 +49,17 @@ int main()
 		auto image2 = io2->read();
 		cout << "Read in " << filename << "\n";
 		
+		MaskImageFilter mif;
+		mif.setInput(image2);
+		mif.setInputMask(image);
+		mif.update();
+		auto masked_image = mif.getOutput();
+
+		outfilename = "..//..//data//brain_out_masked.mhd";
+		io2 = ImageIOFactory::getIO(outfilename);
+		io2->write(image2, { 109, 91, 80, 1, 1 }); // image, dimensions
+		cout << "Written image to " << outfilename << "\n";
+
 		f.setInput(image2);
 		f.setThreshold(60);
 		f.update();

@@ -23,22 +23,28 @@ namespace hmc {
 		ImageFilter& operator=(const ImageFilter&) = delete;
 
 		// Set the input image for this filter
-		virtual void setInput(const vector<T>& i) {
+		void setInput(const vector<T>& i) {
 			// The input should be const. However, we cannot store it that way in our
 			// base class. Therefor we cast away the const and store a pointer to the
 			// original data. Upon using the input data in update(), we cast it back.
 			_input = const_cast<vector<T>*>(&i);
 		}
 
+		// Get the input back as a const ref
+		const vector<T>& getInput() const {
+			// Didn't touch _input, cast it back to const;
+			return const_cast<const vector<T>&>(*_input);
+		}
+
 		// Get the output image result of this filter; 
 		// available after calling update()
-		virtual vector<T> getOutput() const { return _output; };
+		vector<T> getOutput() const { return _output; };
 
 		// Update the image filter and compute the output
 		virtual void update()
 		{
 			// Didn't touch _input, cast it back to const; then execute()
-			execute(const_cast<const vector<T>&>(*_input));
+			execute(getInput());
 		}
 
 	protected:

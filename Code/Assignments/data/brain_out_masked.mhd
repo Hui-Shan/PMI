@@ -1,0 +1,5 @@
+MHD:
+NDims = 5
+DimSize = 109 91 80 1 1 
+ElementType = MET_SHORT
+ElementDataFile = brain_out_masked.raw

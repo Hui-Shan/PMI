@@ -2,7 +2,6 @@
 #define IMAGEIOBASE_H
 
 #include "../std_lib_facilities.h"
-#include <array>
 
 #define N_DIM 5
 
