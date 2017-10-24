@@ -117,6 +117,7 @@
     <ClInclude Include="ImageFilter.h" />
     <ClInclude Include="ImageIOBase.h" />
     <ClInclude Include="ImageIOFactory.h" />
+    <ClInclude Include="MaskImageFilter.h" />
     <ClInclude Include="MhdIO.h" />
     <ClInclude Include="PipIO.h" />
     <ClInclude Include="StatisticsImageFilter.h" />

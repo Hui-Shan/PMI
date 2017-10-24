@@ -41,5 +41,8 @@
     <ClInclude Include="StatisticsImageFilter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="MaskImageFilter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

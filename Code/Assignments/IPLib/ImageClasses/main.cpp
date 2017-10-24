@@ -21,12 +21,14 @@ int main()
 
 		StatisticsImageFilter sf;
 		sf.setInput(image);
+		sf.update();
 		cout << "number of voxels " << sf.getNumVoxels() << "\n";
 		cout << "min " << sf.getMin() << "\n";
 		cout << "max " << sf.getMax() << "\n";
+		cout << "median " << sf.getMedian() << "\n";
 		cout << "sum " << sf.getSum() << "\n";
 		cout << "mean " << sf.getMean() << "\n";
-		cout << "median " << sf.getMedian() << "\n";
+		cout << "variance " << sf.getVariance() << "\n";
 
 		ThresholdImageFilter f;
 		f.setInput(image);
