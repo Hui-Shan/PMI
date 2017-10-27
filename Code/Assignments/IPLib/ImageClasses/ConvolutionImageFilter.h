@@ -1,29 +1,21 @@
-#ifndef IMAGEFILTER_H
-#define IMAGEFILTER_H
+#ifndef CONVOLUTIONIMAGEFILTER_H
+#define CONVOLUTIONIMAGEFILTER_H
 
-#include "../std_lib_facilities.h"
+#include "ImageFilter.h"
 
 namespace hmc {
-
-	typedef short T; // all we do is short
-
-	// Base class for all image filters to be implemented.
-	class ImageFilter
+	class ConvolutionImageFilter : public ImageFilter
 	{
-		
+
 	public:
 		// Constructor.
-		ImageFilter() {};
+		ConvolutionImageFilter() : _rad(0) {};
 
 		// Destructor. This class does not own any free store allocated objects; 
 		// but derived classes might, so it's virtual and empty
-		virtual ~ImageFilter() {};
+		virtual ~ConvolutionImageFilter() {};
 
-		// Because derived classes can add data/function/type members, we want to
-		// avoid copying (and thus slicing)
-		ImageFilter(const ImageFilter&) = delete;
-		ImageFilter& operator=(const ImageFilter&) = delete;
-
+		
 		// Set the input image for this filter
 		void setInput(const vector<T>& i) {
 			// The input should be const. However, we cannot store it that way in our
@@ -37,6 +29,11 @@ namespace hmc {
 			// Didn't touch _input, cast it back to const;
 			return const_cast<const vector<T>&>(*_input);
 		}
+
+		// Sets the radius of the Gaussian 
+		void setRadius(const int radius) { _rad = radius; };
+
+
 
 		// Get the output image result of this filter; 
 		// available after calling update()
@@ -54,14 +51,31 @@ namespace hmc {
 		vector<T> _output;
 
 		// This method should be overloaded in your derived class and implement the
-		// image filter that fills _output
-		virtual void execute(const vector<T>& i) = 0;
+		// image filter that fills _output		
+		virtual void execute(const vector<T>& i) {
+			// Clear and resize the output
+			_output.clear();
+			_output.resize(i.size());
+			
+
+
+			int x; 
+			int y;
+			int z; 
+
+
+		};
+
+		T get_pixel_value(int x, int y, int z, int xDim, int yDim) {
+			return (*_input)[(z * xDim + yDim) + (y * xDim) + x];
+		}
 
 	private:
 		// Temporary storage of a pointer to the image data. Because we do some
 		// const-magic, we keep it private.
 		vector<T>* _input;
+		int _rad;
 	};
 }
 
-#endif /* IMAGEFILTER_H */
+#endif /* CONVOLUTIONIMAGEFILTER_H */

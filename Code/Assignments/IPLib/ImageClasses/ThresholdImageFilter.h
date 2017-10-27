@@ -11,6 +11,9 @@ namespace hmc {
 		// Constructor that initializes the threshold at 0
 		ThresholdImageFilter() : _t(0) {}
 
+		// Destructor
+		~ThresholdImageFilter() { };
+
 		// Get and set functions for the threshold value
 		T getThreshold() const { return _t; }
 		void setThreshold(T threshold) { _t = threshold; }

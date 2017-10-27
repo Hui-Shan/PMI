@@ -1,9 +1,78 @@
+#pragma warning(default:4996)
+
 #include "ImageIOFactory.h"
 #include "ThresholdImageFilter.h"
 #include "StatisticsImageFilter.h"
 #include "MaskImageFilter.h"
 
 using namespace hmc;
+
+vector<T> get_image_vec(string imfile) {
+	ImageIOBase* io = ImageIOFactory::getIO(imfile);
+	auto image_vec = io->read();	
+	delete io; io = nullptr;
+	return image_vec;
+}
+
+void test_statistics_filter(string imfile) {	
+	auto image = get_image_vec(imfile);
+	cout << "\nComputing statistics for " << imfile << " \n"; 
+	
+	StatisticsImageFilter sf;
+	sf.setInput(image);
+	sf.update();
+
+	cout << "Number of voxels " << sf.getNumVoxels() << "\n";
+	cout << "Min " << sf.getMin() << "\n";
+	cout << "Max " << sf.getMax() << "\n";
+	cout << "Median " << sf.getMedian() << "\n";
+	cout << "Sum " << sf.getSum() << "\n";
+	cout << "Mean " << sf.getMean() << "\n";
+	cout << "Variance " << sf.getVariance() << "\n";
+}
+
+void test_threshold_filter(string imfile_in, T threshold, string imfile_out) {
+	cout << "\nThresholding " << imfile_in << " at " << threshold << ":\n";
+	auto image_in = get_image_vec(imfile_in);
+
+	ThresholdImageFilter f;
+	f.setInput(image_in);
+	f.setThreshold(threshold);
+	f.update();
+	auto image_out = f.getOutput();
+	
+	ImageIOBase* io = ImageIOFactory::getIO(imfile_out);
+	io->write(image_out, { 109, 91, 80, 1, 1 }); // image, dimensions		
+	delete io; io = nullptr;
+	
+	cout << "Saved thresholded image to " << imfile_out << "\n";
+}
+
+void test_mask_filter(string imfile_in, string imfile_out) {	
+	cout << "\nMasking away half the image of " << imfile_in << "\n";
+	ImageIOBase* io2 = ImageIOFactory::getIO(imfile_in);
+	auto image2 = io2->read();
+
+	// 	
+	vector<T> mask;
+	mask.resize(image2.size());
+	for (int i = 0; i < mask.size(); ++i){ 
+		if (i < mask.size() / 2) mask[i] = 1;
+		else mask[i] = 0;
+	}
+
+	MaskImageFilter mif;
+	mif.setInput(image2);
+	mif.setInputMask(mask);
+	mif.update();
+	auto masked_image = mif.getOutput();
+
+	io2 = ImageIOFactory::getIO(imfile_out);
+	io2->write(masked_image, { 109, 91, 80, 1, 1 });
+	delete io2; io2 = nullptr;
+	
+	cout << "Saved masked image to " << imfile_out << "\n";
+}
 
 int main()
 {
@@ -20,56 +89,20 @@ int main()
 		auto image = io->read();
 		cout << "Read in " << filename << "\n";
 
-		StatisticsImageFilter sf;
-		sf.setInput(image);
-		sf.update();
-		cout << "number of voxels " << sf.getNumVoxels() << "\n";
-		cout << "min " << sf.getMin() << "\n";
-		cout << "max " << sf.getMax() << "\n";
-		cout << "median " << sf.getMedian() << "\n";
-		cout << "sum " << sf.getSum() << "\n";
-		cout << "mean " << sf.getMean() << "\n";
-		cout << "variance " << sf.getVariance() << "\n";
+		// Test statistics filter				
+		test_statistics_filter(pipfile);
 
-		ThresholdImageFilter f;
-		f.setInput(image);
-		f.setThreshold(60);
-		f.update();
-		image = f.getOutput();
-
+		// Test threshold filter	
 		outfilename = "..//..//data//brain_out_thresholded.pip";
-		io = ImageIOFactory::getIO(outfilename);
-		io->write(image, { 109, 91, 80, 1, 1 }); // image, dimensions
-
-		delete io; io = nullptr;
-		cout << "Written image to " << outfilename << "\n";
+		test_threshold_filter(filename, 60, outfilename);
 		
+		// Test mask image filter
 		filename = mhdfile;
-		ImageIOBase* io2 = ImageIOFactory::getIO(filename);
-		auto image2 = io2->read();
-		cout << "Read in " << filename << "\n";
-		
-		MaskImageFilter mif;
-		mif.setInput(image2);
-		mif.setInputMask(image);
-		mif.update();
-		auto masked_image = mif.getOutput();
+		string masked_file = "..//..//data//brain_masked.pip";
+		test_mask_filter(filename, masked_file);
 
-		outfilename = "..//..//data//brain_out_masked.mhd";
-		io2 = ImageIOFactory::getIO(outfilename);
-		io2->write(image2, { 109, 91, 80, 1, 1 }); // image, dimensions
-		cout << "Written image to " << outfilename << "\n";
+		// Test convolution filter
 
-		f.setInput(image2);
-		f.setThreshold(60);
-		f.update();
-		image2 = f.getOutput();
-
-		outfilename = "..//..//data//brain_out_thresholded.mhd";
-		io2 = ImageIOFactory::getIO(outfilename);
-		io2->write(image2, { 109, 91, 80, 1, 1 }); // image, dimensions
-		delete io2; io2 = nullptr;
-		cout << "Written image to " << outfilename << "\n";
 	}
 	catch (exception &e) {
 		cout << e.what() << "\n";

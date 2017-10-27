@@ -10,11 +10,10 @@ namespace hmc {
 		typedef short T; // all we do is short
 	public:
 		// Constructor.
-		MaskImageFilter() {};
+		MaskImageFilter() :_input{}, _mask{} {};
 
-		// Destructor. This class does not own any free store allocated objects; 
-		// but derived classes might, so it's virtual and empty
-		~MaskImageFilter() {};
+		// Destructor. Removes pointers to _input and _mask
+		~MaskImageFilter() { };
 
 		// Set the input image for this filter
 		void setInput(const vector<T>& i) {
@@ -53,11 +52,18 @@ namespace hmc {
 		// image filter that fills _output
 		virtual void execute(const vector<T>& i) {
 			// Clear and resize the output
-			_output.clear();
-			_output.resize(i.size());			
+			_output.clear();			
+			_output.resize(i.size());	
 
-			// Do the masking with an std::transform, see Chapter 21
-			transform(begin(i), end(i), _mask->begin(), begin(_output), std::multiplies<T>());		
+			if (_input->size() != _mask->size()) 
+				error("Image and mask size do not match!");
+						
+			// Do the masking with a for-loop
+			for (int j = 0; j < _input->size(); ++j) {
+				_output[j] = (*_mask)[j] != 0 ? i[j] : 0;
+			}
+			//transform(begin(i), end(i), _mask->begin(), begin(_output), std::multiplies<T>());
+
 		};
 
 	private:
