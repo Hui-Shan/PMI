@@ -1,20 +1,20 @@
 #pragma warning(default:4996)
 
 #include "ImageIOFactory.h"
-#include "ThresholdImageFilter.h"
+/*#include "ThresholdImageFilter.h"
 #include "StatisticsImageFilter.h"
-#include "MaskImageFilter.h"
+#include "MaskImageFilter.h"*/
 
 using namespace hmc;
 
 vector<T> get_image_vec(string imfile) {
-	ImageIOBase* io = ImageIOFactory::getIO(imfile);
+	unique_ptr<ImageIOBase> io = ImageIOFactory::getIO(imfile);
 	auto image_vec = io->read();	
-	delete io; io = nullptr;
+	//delete io; io = nullptr;
 	return image_vec;
 }
 
-void test_statistics_filter(string imfile) {	
+/*void test_statistics_filter(string imfile) {	
 	auto image = get_image_vec(imfile);
 	cout << "\nComputing statistics for " << imfile << " \n"; 
 	
@@ -41,16 +41,15 @@ void test_threshold_filter(string imfile_in, T threshold, string imfile_out) {
 	f.update();
 	auto image_out = f.getOutput();
 	
-	ImageIOBase* io = ImageIOFactory::getIO(imfile_out);
-	io->write(image_out, { 109, 91, 80, 1, 1 }); // image, dimensions		
-	delete io; io = nullptr;
+	unique_ptr<ImageIOBase> io = ImageIOFactory::getIO(imfile_out);
+	io->write(image_out, { 109, 91, 80, 1, 1 }); // image, dimensions			
 	
 	cout << "Saved thresholded image to " << imfile_out << "\n";
 }
 
 void test_mask_filter(string imfile_in, string imfile_out) {	
 	cout << "\nMasking away half the image of " << imfile_in << "\n";
-	ImageIOBase* io2 = ImageIOFactory::getIO(imfile_in);
+	unique_ptr<ImageIOBase> io2 = ImageIOFactory::getIO(imfile_in);
 	auto image2 = io2->read();
 
 	// 	
@@ -69,10 +68,10 @@ void test_mask_filter(string imfile_in, string imfile_out) {
 
 	io2 = ImageIOFactory::getIO(imfile_out);
 	io2->write(masked_image, { 109, 91, 80, 1, 1 });
-	delete io2; io2 = nullptr;
+	//delete io2; io2 = nullptr;
 	
 	cout << "Saved masked image to " << imfile_out << "\n";
-}
+}*/
 
 int main()
 {
@@ -85,10 +84,11 @@ int main()
 	// Reading and writing image files
 	try {
 		filename = pipfile;
-		ImageIOBase* io = ImageIOFactory::getIO(filename);
+		unique_ptr<ImageIOBase> io = ImageIOFactory::getIO(filename);
 		auto image = io->read();
 		cout << "Read in " << filename << "\n";
 
+		/*
 		// Test statistics filter				
 		test_statistics_filter(pipfile);
 
@@ -101,7 +101,7 @@ int main()
 		string masked_file = "..//..//data//brain_masked.pip";
 		test_mask_filter(filename, masked_file);
 
-		// Test convolution filter
+		// Test convolution filter */
 
 	}
 	catch (exception &e) {

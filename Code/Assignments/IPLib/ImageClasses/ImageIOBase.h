@@ -2,8 +2,7 @@
 #define IMAGEIOBASE_H
 
 #include "../std_lib_facilities.h"
-
-#define N_DIM 5
+#include "Image.h"
 
 namespace hmc {
 
@@ -15,8 +14,8 @@ namespace hmc {
 		virtual ~ImageIOBase() {};
 
 		// pure virtual read and write functions
-		virtual vector<short> read() = 0;
-		virtual void write(const vector<short>&, const array<int, N_DIM>&) = 0;
+		virtual Image read() = 0;
+		virtual void write(const Image&) = 0;
 
 		// don't 'copy construct'
 		ImageIOBase(const ImageIOBase&) = delete;
@@ -30,7 +29,7 @@ namespace hmc {
 		string filename;
 
 	private:
-
+		Image _im;
 	};
 	
 }

@@ -16,19 +16,22 @@ namespace hmc {
 	public:
 		PipIO(string file_in) : ImageIOBase(file_in) { filename = file_in; };
 
-		vector<short> read() override;
-		void write(const vector<short>&, const array<int, N_DIM>&) override;
+		Image read() override;
+		void write(const Image&) override;
 		string get_filename() { return filename; };
 
 	protected:
 		string filename;
 
+	private:
+		Image _im;
+
 	};
 
 	// Functions for PipIO class	
-	vector<short> PipIO::read()
-		// Function that reads in the file specified by filename and returns the
-		// image data into vector
+	Image PipIO::read()
+		// Function that reads in the file specified by filename and returns an
+		// Image object
 	{
 		// Opens the ifstream 
 		ifstream ifs{ filename, ios_base::binary };
@@ -49,27 +52,31 @@ namespace hmc {
 		ifs.read(as_bytes(Nc), sizeof(int));
 		ifs.read(as_bytes(Nt), sizeof(int));
 
+		dimension pip_dim{ Nx, Ny, Nz, Nc, Nt };
+
 		// Throws error if any dimensions are smaller than 1
 		if (Nx < 1 || Ny < 1 || Nz < 1 || Nc < 1 || Nt < 1) {
 			error("Negative dimensions error\n");
 		}
 
 		// Reads in the values of the image into a vector of shorts
-		vector<short> image_vec;
+				
+		T* pip_data;
 		for (short val; ifs.read(as_bytes(val), sizeof(short));) {
-			image_vec.push_back(val);
+			pip_data = &val;
+			pip_data++;
 		}
 
 		// Throws error if the number of voxels is not the same as the product of the 
 		// dimensions
 		int dim_product = Nx * Ny * Nz * Nc * Nt;
-		int num_voxels_read = image_vec.size();
-		if (num_voxels_read != dim_product) error("Number of voxels incorrect\n");
+		//int num_voxels_read = *pip_data.size();
+		//if (num_voxels_read != dim_product) error("Number of voxels incorrect\n");
 
-		return image_vec;
+		return Image(pip_dim, pip_data);
 	}
 
-	void PipIO::write(const vector<short>& image, const array<int, N_DIM>& dimensions)
+	void PipIO::write(const Image& im)
 		// Function writes pip image to filename
 	{
 		ofstream ofs{ filename, ios_base::binary };
@@ -78,13 +85,16 @@ namespace hmc {
 		// Write data type
 		ofs.write(as_bytes(short_type), sizeof(unsigned char));
 
+		dimension dims = im.size();
+		T* image; 
+
 		// Write image dimensions		
-		for (int dim : dimensions) {
+		for (int dim : dims) {
 			ofs.write(as_bytes(dim), sizeof(int));
 		}
 
 		// Write image values
-		for (short val : image) {
+		for (int i = 0; i != &image->size(); ++i) {
 			ofs.write(as_bytes(val), sizeof(short));
 		}
 	}

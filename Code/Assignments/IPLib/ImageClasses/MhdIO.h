@@ -23,8 +23,8 @@ namespace hmc {
 		MhdIO(string file_in) : ImageIOBase(file_in) { filename = file_in; };
 
 		// Read and write functions
-		vector<short> read() override;
-		void write(const vector<short>&, const array<int, N_DIM>&) override;
+		Image read() override;
+		void write(const Image&) override;
 
 		string get_filename() { return filename; };
 
@@ -48,7 +48,7 @@ namespace hmc {
 		return path_out;
 	}
 
-	vector<short> MhdIO::read()
+	Image MhdIO::read()
 		// Reads in the image voxel values for the Mhd file named filename
 	{
 		// Declare output vector with image data
@@ -125,17 +125,17 @@ namespace hmc {
 		}
 		if (num_voxels_read != dim_product) error("Number of voxels incorrect\n");
 
-		return image_vec;
+		return Image(;
 	}
 
-	void MhdIO::write(const vector<short>& image, const array<int, N_DIM>& dimensions)
+	void MhdIO::write(const Image& im)
 	{
 		// Open .mhd output filestream
 		ofstream ofs_mhd{ filename };
 		if (!ofs_mhd) error("Could not open " + filename + "for output\n");
-
+		dimension dimensions = im.size();
 		// Make string listing dimension sizes
-		int ndims = dimensions.size();
+		
 		stringstream dimensions_in;
 		for (int dim : dimensions) {
 			dimensions_in << dim << " ";

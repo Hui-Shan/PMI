@@ -20,19 +20,20 @@ namespace hmc {
 		// find extension of filename
 		int index = filename.find_last_of(".");
 		std::string ext = filename.substr(index);
-		unique_ptr<ImageIOBase> upt;
+		//unique_ptr<ImageIOBase> upt;
 		// create new PipIO or MhdIO images on heap accordingly
 		// and return pointer to image
 		if (ext == ".pip") {
 			PipIO *img_ptr = NULL;
-			img_ptr = new PipIO(filename);						
+			unique_ptr<ImageIOBase> upt(new PipIO(filename));						
+			return upt;
 		}
 		else {
 			MhdIO *img_ptr = NULL;
-			img_ptr = new MhdIO(filename);
-			
-		}
-		upt = make_unique{ img_ptr };
+			//img_ptr = new MhdIO(filename);
+			unique_ptr<ImageIOBase> upt(new MhdIO(filename));
+			return upt;
+		}		
 	}
 	
 }
