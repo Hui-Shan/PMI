@@ -7,11 +7,11 @@
 
 using namespace hmc;
 
-vector<T> get_image_vec(string imfile) {
+Image get_image_vec(string imfile) {
 	unique_ptr<ImageIOBase> io = ImageIOFactory::getIO(imfile);
-	auto image_vec = io->read();	
+	auto image = io->read();	
 	//delete io; io = nullptr;
-	return image_vec;
+	return image;
 }
 
 /*void test_statistics_filter(string imfile) {	

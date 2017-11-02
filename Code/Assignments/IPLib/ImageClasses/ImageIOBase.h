@@ -25,7 +25,7 @@ namespace hmc {
 
 	protected:
 		// protected constructor
-		ImageIOBase(string file_in) { filename = file_in; };
+		ImageIOBase(string file_in) : filename(file_in) {};
 		string filename;
 
 	private:

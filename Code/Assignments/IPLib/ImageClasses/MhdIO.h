@@ -72,6 +72,8 @@ namespace hmc {
 		// Get relative folder path of filename if present
 		file_path = get_relative_filepath();
 
+		Image::dimension imdim;
+
 		// Read in the number of dimensions, the dimension sizes, the element type
 		// and the name of the .raw file
 		while (!ifs_mhd.eof()) {
@@ -87,9 +89,12 @@ namespace hmc {
 				if (param == dimsize_str) {
 					stringstream ss;
 					ss << remainder;
+					int dim_idx = 0;
 					for (int dim; ss >> dim;) {
 						if (dim < 0) error("Negative dimension found\n");
 						dimsize.push_back(dim);
+						imdim[dim_idx] = dim;
+						dim_idx++;
 					}
 				}
 				if (param == eltype_str) {
@@ -125,7 +130,7 @@ namespace hmc {
 		}
 		if (num_voxels_read != dim_product) error("Number of voxels incorrect\n");
 
-		return Image(;
+		return Image(imdim);
 	}
 
 	void MhdIO::write(const Image& im)
@@ -133,7 +138,7 @@ namespace hmc {
 		// Open .mhd output filestream
 		ofstream ofs_mhd{ filename };
 		if (!ofs_mhd) error("Could not open " + filename + "for output\n");
-		dimension dimensions = im.size();
+		Image::dimension dimensions = im.size();
 		// Make string listing dimension sizes
 		
 		stringstream dimensions_in;
@@ -148,7 +153,7 @@ namespace hmc {
 
 		// Write .mhd file
 		ofs_mhd << "MHD:\n";
-		ofs_mhd << ndims_str << equals_str << ndims << "\n";
+		ofs_mhd << ndims_str << equals_str << im.nr_dims() << "\n";
 		ofs_mhd << dimsize_str << equals_str << dimensions_in.str() << "\n";
 		ofs_mhd << eltype_str << equals_str << MET_SHORT << "\n";
 		ofs_mhd << eldatfile_str << equals_str << short_raw_filename << "\n";
@@ -157,9 +162,9 @@ namespace hmc {
 		ofstream ofs_raw{ raw_filename, ios_base::binary };
 		if (!ofs_raw) error("Could not open " + raw_filename + "for output\n");
 
-		// and write image values to .raw file	
-		for (short val : image) {
-			ofs_raw.write(as_bytes(val), sizeof(short));
+		// and write image values to .raw file
+		for (Image::const_iterator i = im.begin(); i != im.end(); ++i) {
+			ofs_raw.write(as_bytes(*i), sizeof(short));
 		}
 	}
 

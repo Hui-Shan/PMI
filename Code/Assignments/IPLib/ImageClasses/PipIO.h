@@ -14,9 +14,14 @@ namespace hmc {
 	class PipIO : public ImageIOBase
 	{
 	public:
-		PipIO(string file_in) : ImageIOBase(file_in) { filename = file_in; };
-
+		PipIO(string file_in) : ImageIOBase(file_in) { 
+			filename = file_in; 
+			Image::dimension imdim = PipIO::read_dim();
+			_im = PipIO::read(); 
+		};
+		
 		Image read() override;
+		Image::dimension read_dim();
 		void write(const Image&) override;
 		string get_filename() { return filename; };
 
@@ -27,6 +32,35 @@ namespace hmc {
 		Image _im;
 
 	};
+
+	Image::dimension PipIO::read_dim() {
+		// Opens the ifstream 
+		ifstream ifs{ filename, ios_base::binary };
+		if (!ifs) error("Could not open the input file ", filename);
+
+		// Reads in the datatype of the file
+		unsigned char datatype;
+		ifs.read(as_bytes(datatype), sizeof(unsigned char));
+
+		// Throws error if datatype is not a short
+		if (datatype != short_type) error(filename + "has wrong data type");
+
+		// Read in the dimensions of the file
+		int Nx, Ny, Nz, Nc, Nt;
+		ifs.read(as_bytes(Nx), sizeof(int));
+		ifs.read(as_bytes(Ny), sizeof(int));
+		ifs.read(as_bytes(Nz), sizeof(int));
+		ifs.read(as_bytes(Nc), sizeof(int));
+		ifs.read(as_bytes(Nt), sizeof(int));
+		
+		// Throws error if any dimensions are smaller than 1
+		if (Nx < 1 || Ny < 1 || Nz < 1 || Nc < 1 || Nt < 1) {
+			error("Negative dimensions error\n");
+		}
+
+		Image::dimension pip_dim{ Nx, Ny, Nz, Nc, Nt };
+		return pip_dim;
+	}
 
 	// Functions for PipIO class	
 	Image PipIO::read()
@@ -52,7 +86,7 @@ namespace hmc {
 		ifs.read(as_bytes(Nc), sizeof(int));
 		ifs.read(as_bytes(Nt), sizeof(int));
 
-		dimension pip_dim{ Nx, Ny, Nz, Nc, Nt };
+		Image::dimension pip_dim{ Nx, Ny, Nz, Nc, Nt };
 
 		// Throws error if any dimensions are smaller than 1
 		if (Nx < 1 || Ny < 1 || Nz < 1 || Nc < 1 || Nt < 1) {
@@ -61,8 +95,8 @@ namespace hmc {
 
 		// Reads in the values of the image into a vector of shorts
 				
-		T* pip_data;
-		for (short val; ifs.read(as_bytes(val), sizeof(short));) {
+		Image::T* pip_data;
+		for (Image::T val; ifs.read(as_bytes(val), sizeof(short));) {
 			pip_data = &val;
 			pip_data++;
 		}
@@ -73,7 +107,10 @@ namespace hmc {
 		//int num_voxels_read = *pip_data.size();
 		//if (num_voxels_read != dim_product) error("Number of voxels incorrect\n");
 
-		return Image(pip_dim, pip_data);
+		Image read_image = Image(pip_dim);
+		//erator=(Image&& im)
+		_im = Image(pip_dim);
+		
 	}
 
 	void PipIO::write(const Image& im)
@@ -85,17 +122,16 @@ namespace hmc {
 		// Write data type
 		ofs.write(as_bytes(short_type), sizeof(unsigned char));
 
-		dimension dims = im.size();
-		T* image; 
-
+		Image::dimension dims = im.size();
+		
 		// Write image dimensions		
 		for (int dim : dims) {
 			ofs.write(as_bytes(dim), sizeof(int));
 		}
 
 		// Write image values
-		for (int i = 0; i != &image->size(); ++i) {
-			ofs.write(as_bytes(val), sizeof(short));
+		for (Image::const_iterator i = im.begin(); i != im.end(); ++i) {
+			ofs.write(as_bytes(*i), sizeof(short));
 		}
 	}
 

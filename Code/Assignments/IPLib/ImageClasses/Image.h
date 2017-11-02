@@ -7,13 +7,14 @@
 #define N_DIM 5
 
 namespace hmc {
-	// Internally used data types
-	typedef short T;
-	typedef std::array<int, N_DIM> dimension;
 
 	class Image
 	{
 	public:
+		// Internally used data types
+		typedef short T;
+		typedef std::array<int, N_DIM> dimension;
+
 		// STL container and iterator typedefs
 		typedef T         value_type;
 		typedef T*        iterator;
@@ -21,17 +22,17 @@ namespace hmc {
 		typedef T&        reference;
 		typedef const T&  const_reference;
 
-		// Constructors and destructor
-		Image() :_dimensions{}, _data{} {};
-		Image(dimension di) :_dimensions(di), _data{} {};
-		Image(dimension di, T* da) :_dimensions(di), _data{da} {};
+		// Constructors and destructor		
+		Image(dimension di) : _dimensions(di) {};		
 		Image(const Image& im) : _dimensions(im._dimensions), _data(im._data) {};
 		Image(Image&& im) : _dimensions(im._dimensions), _data(im._data) {};
 
-		virtual ~Image() {};
+		virtual ~Image() {
+			delete[] _data;
+		};
 
 		// Assignment operators
-		Image& operator=(const Image& im) { 
+		/*Image& operator=(const Image& im) { 
 			_dimensions = im._dimensions; 
 			_data = im._data;
 		};
@@ -39,7 +40,7 @@ namespace hmc {
 		Image& operator=(Image&& im) {
 			_dimensions = im._dimensions;
 			_data = im._data;
-		};
+		};*/
 
 		// Basic iterators, this generates a C4996 error in Visual Studio.
 		// Disable that in main.cpp with: #pragma warning(default:4996) 
