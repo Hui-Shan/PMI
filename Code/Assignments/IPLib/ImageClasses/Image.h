@@ -22,25 +22,32 @@ namespace hmc {
 		typedef T&        reference;
 		typedef const T&  const_reference;
 
-		// Constructors and destructor		
+		// Constructors and destructor	
+		Image() {};
+
 		Image(dimension di) : _dimensions(di) {};		
+		Image(dimension di, T* da) : _dimensions(di), _data(da) {};
 		Image(const Image& im) : _dimensions(im._dimensions), _data(im._data) {};
 		Image(Image&& im) : _dimensions(im._dimensions), _data(im._data) {};
 
 		virtual ~Image() {
-			delete[] _data;
+			//delete[] _data;
 		};
 
 		// Assignment operators
-		/*Image& operator=(const Image& im) { 
+		Image& operator=(const Image& im) { 
 			_dimensions = im._dimensions; 
 			_data = im._data;
+
+			return *this;
 		};
 		
 		Image& operator=(Image&& im) {
 			_dimensions = im._dimensions;
-			_data = im._data;
-		};*/
+			_data = im._data;	
+
+			return *this;
+		};
 
 		// Basic iterators, this generates a C4996 error in Visual Studio.
 		// Disable that in main.cpp with: #pragma warning(default:4996) 

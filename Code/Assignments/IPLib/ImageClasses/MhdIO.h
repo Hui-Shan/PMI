@@ -23,7 +23,8 @@ namespace hmc {
 		MhdIO(string file_in) : ImageIOBase(file_in) { filename = file_in; };
 
 		// Read and write functions
-		Image read() override;
+		Image::T* read() override;
+		Image::dimension read_dim() override;
 		void write(const Image&) override;
 
 		string get_filename() { return filename; };
@@ -48,15 +49,20 @@ namespace hmc {
 		return path_out;
 	}
 
-	Image MhdIO::read()
+	Image::dimension MhdIO::read_dim() {
+		return Image::dimension{1,2,3,4,5}; /// hard-coded
+	}
+
+	Image::T* MhdIO::read()
 		// Reads in the image voxel values for the Mhd file named filename
 	{
 		// Declare output vector with image data
-		vector<short> image_vec;
+		//Image::T* image_data;
+		//vector<short> image_vec;
 
 		// and helper variables
-		int ndims;
-		vector<int> dimsize;
+		int ndims;		
+		//vector<int> dimsize;
 
 		string datafile;
 		string elementtype;
@@ -92,7 +98,7 @@ namespace hmc {
 					int dim_idx = 0;
 					for (int dim; ss >> dim;) {
 						if (dim < 0) error("Negative dimension found\n");
-						dimsize.push_back(dim);
+						//dimsize.push_back(dim);
 						imdim[dim_idx] = dim;
 						dim_idx++;
 					}
@@ -113,24 +119,32 @@ namespace hmc {
 		if (!ifs_raw) error("Could not open ", datafile);
 
 		// and read in the image intensity values
-		for (short val; ifs_raw.read(as_bytes(val), sizeof(short));) {
+/*		for (short val; ifs_raw.read(as_bytes(val), sizeof(short));) {
+
 			image_vec.push_back(val);
+		}*/
+
+		Image::T* mhd_data = NULL;
+		for (Image::T val; ifs_raw.read(as_bytes(val), sizeof(short));) {
+			mhd_data = &val;
+			mhd_data++;
 		}
 
 		// Throw error if the number of dimensions does not concur with the dimension
 		// vector read
-		if (ndims != dimsize.size()) error("Number of dimensions incorrect\n");
+		if (ndims != imdim.size()) error("Number of dimensions incorrect\n");
 
 		// Throw error if the dimensions were not specified correctly to get the right
 		// amount of voxels read
-		int num_voxels_read = image_vec.size();
+		/*int num_voxels_read = image_vec.size();
 		int dim_product = 1;
 		for (int dim : dimsize) {
 			dim_product *= dim;
 		}
 		if (num_voxels_read != dim_product) error("Number of voxels incorrect\n");
-
-		return Image(imdim);
+		*/
+		//return Image(imdim);
+		return mhd_data;
 	}
 
 	void MhdIO::write(const Image& im)

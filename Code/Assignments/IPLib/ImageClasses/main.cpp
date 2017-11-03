@@ -7,11 +7,11 @@
 
 using namespace hmc;
 
-Image get_image_vec(string imfile) {
+Image::T* get_image_vec(string imfile) {
 	unique_ptr<ImageIOBase> io = ImageIOFactory::getIO(imfile);
-	auto image = io->read();	
+	auto image_t = io->read();	
 	//delete io; io = nullptr;
-	return image;
+	return image_t;
 }
 
 /*void test_statistics_filter(string imfile) {	
@@ -85,8 +85,20 @@ int main()
 	try {
 		filename = pipfile;
 		unique_ptr<ImageIOBase> io = ImageIOFactory::getIO(filename);
-		auto image = io->read();
+		Image::T* image_t = io->read();
+		Image::dimension image_d = io->read_dim();
 		cout << "Read in " << filename << "\n";
+
+		cout << image_t[0] << " " << &image_t[0] << "\n";
+
+
+		string w = "..//..//data//brain - Copy.pip";
+		unique_ptr<ImageIOBase> io_w = ImageIOFactory::getIO(w);
+		Image new_im = Image(image_d, image_t);
+		io_w->write(new_im);
+
+		string w2 = "C://Users//Hui Shan//Desktop//PMI//PMI-repo//Code//Assignments//data//blabla.pip";
+		unique_ptr<ImageIOBase> io_w2 = ImageIOFactory::getIO(w2);
 
 		/*
 		// Test statistics filter				

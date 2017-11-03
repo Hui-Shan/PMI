@@ -16,11 +16,13 @@ namespace hmc {
 	public:
 		PipIO(string file_in) : ImageIOBase(file_in) { 
 			filename = file_in; 
+			cout << "in construction\n";
 			Image::dimension imdim = PipIO::read_dim();
-			_im = PipIO::read(); 
+			_im = Image(imdim);
+			Image::T* imt = PipIO::read();
 		};
 		
-		Image read() override;
+		Image::T* read() override;
 		Image::dimension read_dim();
 		void write(const Image&) override;
 		string get_filename() { return filename; };
@@ -63,9 +65,9 @@ namespace hmc {
 	}
 
 	// Functions for PipIO class	
-	Image PipIO::read()
+	Image::T* PipIO::read()
 		// Function that reads in the file specified by filename and returns an
-		// Image object
+		// Image::T object
 	{
 		// Opens the ifstream 
 		ifstream ifs{ filename, ios_base::binary };
@@ -92,13 +94,16 @@ namespace hmc {
 		if (Nx < 1 || Ny < 1 || Nz < 1 || Nc < 1 || Nt < 1) {
 			error("Negative dimensions error\n");
 		}
+		
+		_im = Image(pip_dim);
 
 		// Reads in the values of the image into a vector of shorts
 				
-		Image::T* pip_data;
+		//Image::T* pip_data = NULL;
+		Image::iterator pip_data_it = _im.begin();
 		for (Image::T val; ifs.read(as_bytes(val), sizeof(short));) {
-			pip_data = &val;
-			pip_data++;
+			pip_data_it = &val;
+			pip_data_it++;
 		}
 
 		// Throws error if the number of voxels is not the same as the product of the 
@@ -107,10 +112,11 @@ namespace hmc {
 		//int num_voxels_read = *pip_data.size();
 		//if (num_voxels_read != dim_product) error("Number of voxels incorrect\n");
 
-		Image read_image = Image(pip_dim);
+		//Image read_image = Image(pip_dim);
 		//erator=(Image&& im)
-		_im = Image(pip_dim);
 		
+		//cout << _im << "\n";
+		return pip_data_it;
 	}
 
 	void PipIO::write(const Image& im)

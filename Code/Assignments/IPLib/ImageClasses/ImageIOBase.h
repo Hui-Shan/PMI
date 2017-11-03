@@ -14,7 +14,8 @@ namespace hmc {
 		virtual ~ImageIOBase() {};
 
 		// pure virtual read and write functions
-		virtual Image read() = 0;
+		virtual Image::T* read() = 0;
+		virtual Image::dimension read_dim() = 0;
 		virtual void write(const Image&) = 0;
 
 		// don't 'copy construct'
@@ -25,7 +26,7 @@ namespace hmc {
 
 	protected:
 		// protected constructor
-		ImageIOBase(string file_in) : filename(file_in) {};
+		ImageIOBase(string file_in) : filename(file_in), _im() { };
 		string filename;
 
 	private:
