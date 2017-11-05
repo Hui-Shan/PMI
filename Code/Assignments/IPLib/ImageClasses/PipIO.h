@@ -16,10 +16,10 @@ namespace hmc {
 	public:
 		PipIO(string file_in) : ImageIOBase(file_in) { 
 			filename = file_in; 
-			cout << "in construction\n";
+/*			cout << "in construction\n";
 			Image::dimension imdim = PipIO::read_dim();
 			_im = Image(imdim);
-			Image::T* imt = PipIO::read();
+			Image::T* imt = PipIO::read();*/
 		};
 		
 		Image::T* read() override;
@@ -100,11 +100,13 @@ namespace hmc {
 		// Reads in the values of the image into a vector of shorts
 				
 		//Image::T* pip_data = NULL;
+		
 		Image::iterator pip_data_it = _im.begin();
 		for (Image::T val; ifs.read(as_bytes(val), sizeof(short));) {
-			pip_data_it = &val;
+			pip_data_it = &val;			
 			pip_data_it++;
 		}
+		cout << "iterated over image";
 
 		// Throws error if the number of voxels is not the same as the product of the 
 		// dimensions
@@ -134,11 +136,24 @@ namespace hmc {
 		for (int dim : dims) {
 			ofs.write(as_bytes(dim), sizeof(int));
 		}
-
+		cout << "Written dimensions \n";
 		// Write image values
-		for (Image::const_iterator i = im.begin(); i != im.end(); ++i) {
-			ofs.write(as_bytes(*i), sizeof(short));
+		cout << "im.begin() " << im.begin() << "\n";
+		cout << "im.begin()+10 " << im.begin()+10 << "\n";
+		cout << "im.begin()+10000" << im.begin() + 10000 << "\n";
+		cout << "im.begin()+_im.num_voxels()-1" << im.begin() + _im.num_voxels()-1 << "\n";
+		cout << "im.end()" << im.end() << "\n";
+		int vn = 1;		
+		for (Image::const_iterator i = im.begin(); i != im.end()-10; ++i) {									
+			vn += 1;
+			try {
+				ofs.write(as_bytes(*i), sizeof(short));
+			}
+			catch (...) {
+				cout << vn << "\n";
+			}
 		}
+		cout << "Written intensities \n";
 	}
 
 }

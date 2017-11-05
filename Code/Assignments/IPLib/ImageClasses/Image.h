@@ -54,7 +54,11 @@ namespace hmc {
 		iterator begin() { return _data; };
 		iterator end() { return _data + num_voxels(); };
 		const_iterator begin() const { return _data; };
-		const_iterator end() const { return _data; }; // BUG!!! WRONG
+		const_iterator end() const { 
+			int num = 1;
+			for (int x : _dimensions) num *= x;			
+			return _data + num; 
+		}; // BUG!!! WRONG
 
 		// Size and resize
 		dimension size() const { return _dimensions; }; // the dimension object
@@ -72,8 +76,21 @@ namespace hmc {
 		};
 
 		// Pixel value lookup, should support out-of-image coordinates by clamping to 0..dim
-		value_type operator()(int x = 0, int y = 0, int z = 0, int c = 0, int t = 0) const;
-		reference operator()(int x = 0, int y = 0, int z = 0, int c = 0, int t = 0);
+		value_type operator()(int x = 0, int y = 0, int z = 0, int c = 0, int t = 0) const {
+			int ind = x;
+			return _data[ind]; 
+		};
+
+		reference operator()(int x = 0, int y = 0, int z = 0, int c = 0, int t = 0) {
+			int ind = get_data_index(x, y, z, c, t);
+			return _data[ind];
+		};
+
+		int get_data_index(int x = 0, int y = 0, int z = 0, int c = 0, int t = 0) {
+			int d_ind = x;
+			return d_ind;
+		}
+
 
 	private:
 		dimension _dimensions;
