@@ -93,9 +93,10 @@ int main()
 		
 		string w = "..//..//data//brain - Copy.pip";
 		unique_ptr<ImageIOBase> io_w = ImageIOFactory::getIO(w);
-		Image new_im = Image(image_d, image_t);
+		Image new_im = Image(image_d);
+		// new_im = image_t;
 		cout << "Number of voxels " << new_im.num_voxels() << "\n";
-		// io_w->write(new_im);
+		io_w->write(new_im);
 
 		string w2 = "C://Users//Hui Shan//Desktop//PMI//PMI-repo//Code//Assignments//data//blabla.pip";
 		unique_ptr<ImageIOBase> io_w2 = ImageIOFactory::getIO(w2);

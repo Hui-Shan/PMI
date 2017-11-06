@@ -25,27 +25,39 @@ namespace hmc {
 		// Constructors and destructor	
 		Image() {};
 
-		Image(dimension di) : _dimensions(di) {};		
-		Image(dimension di, T* da) : _dimensions(di), _data(da) {};
+		Image(dimension di) : _dimensions(di), _data{ nullptr } {};
+		//Image(dimension di, T* da) : _dimensions(di), _data(da) {};
 		Image(const Image& im) : _dimensions(im._dimensions), _data(im._data) {};
 		Image(Image&& im) : _dimensions(im._dimensions), _data(im._data) {};
 
 		virtual ~Image() {
-			//delete[] _data;
+			delete _data;
 		};
 
 		// Assignment operators
-		Image& operator=(const Image& im) { 
-			_dimensions = im._dimensions; 
-			_data = im._data;
+		Image operator=(const Image& im) {
+			int num = 1;
+			for (int x : im._dimensions) num *= x;
+			
+			T* p = new T[num];
+			for (int i = 0; i < num; ++i) {
+				p[i] = im._data[i];
+			}
+
+			_data = p;
+			_dimensions = im._dimensions;
 
 			return *this;
 		};
 		
 		Image& operator=(Image&& im) {
+			delete[] _data;
+			_data = im._data;
 			_dimensions = im._dimensions;
-			_data = im._data;	
 
+			im._data = nullptr;
+			im._dimensions = dimension{};
+			
 			return *this;
 		};
 
