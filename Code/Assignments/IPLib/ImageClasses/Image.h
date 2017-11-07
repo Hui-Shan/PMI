@@ -25,7 +25,11 @@ namespace hmc {
 		// Constructors and destructor	
 		Image() {};
 
-		Image(dimension di) : _dimensions(di), _data{ nullptr } {};
+		Image(dimension di) : _dimensions(di) {
+			int num = 1;
+			for (int x : di) num *= x;
+			T* _data = new T[num];
+		};
 		//Image(dimension di, T* da) : _dimensions(di), _data(da) {};
 		Image(const Image& im) : _dimensions(im._dimensions), _data(im._data) {};
 		Image(Image&& im) : _dimensions(im._dimensions), _data(im._data) {};
@@ -64,7 +68,7 @@ namespace hmc {
 		// Basic iterators, this generates a C4996 error in Visual Studio.
 		// Disable that in main.cpp with: #pragma warning(default:4996) 
 		iterator begin() { return _data; };
-		iterator end() { return _data + num_voxels(); };
+		iterator end() { return _data; };
 		const_iterator begin() const { return _data; };
 		const_iterator end() const { 
 			int num = 1;

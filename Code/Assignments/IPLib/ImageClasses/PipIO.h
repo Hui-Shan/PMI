@@ -97,13 +97,22 @@ namespace hmc {
 		
 		_im = Image(pip_dim);
 
+		cout <<  _im.begin() << _im.end() << "\n";
+
 		// Reads in the values of the image into a vector of shorts
 				
 		//Image::T* pip_data = NULL;
 		
 		Image::iterator pip_data_it = _im.begin();
+		int vn = 1;
 		for (Image::T val; ifs.read(as_bytes(val), sizeof(short));) {
-			pip_data_it = &val;			
+			
+			if ((vn % 1000) == 0) {
+				cout << val << " ";
+			}
+			++vn;
+
+			pip_data_it = 0;			
 			pip_data_it++;
 		}
 		cout << "iterated over image";
@@ -143,8 +152,11 @@ namespace hmc {
 		cout << "im.begin()+10000" << im.begin() + 10000 << "\n";
 		cout << "im.begin()+_im.num_voxels()-1" << im.begin() + _im.num_voxels()-1 << "\n";
 		cout << "im.end()" << im.end() << "\n";
-		int vn = 1;		
+		int vn = 1;				
 		for (Image::const_iterator i = im.begin(); i != im.end()-10; ++i) {									
+			if ((vn % 1000) == 0) {
+				cout << *i << " ";
+			}
 			vn += 1;
 			try {
 				ofs.write(as_bytes(*i), sizeof(short));

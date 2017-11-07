@@ -85,22 +85,35 @@ int main()
 	try {
 		filename = pipfile;
 		unique_ptr<ImageIOBase> io = ImageIOFactory::getIO(filename);
+
+		Image::dimension id1 = { 4,4,4,1,1 };
+		Image image1 = Image(id1);
+
+		for (Image::iterator it = image1.begin(); it != image1.end(); ++it) {
+			cout << *it << " ";
+		}
+
+		/*bool check = image1.begin() == image1.end();
+		cout << check << "\n";
+
 		Image::T* image_t = io->read();
 		Image::dimension image_d = io->read_dim();
 		cout << "Read in " << filename << "\n";
-
-		cout << image_t[0] << " " << &image_t[0] << "\n";
+		*/
+		/*
+		//cout << image_t[0] << " " << &image_t[0] << "\n";
+		//cout << image_t[20000] << " " << &image_t[20000] << "\n";
 		
 		string w = "..//..//data//brain - Copy.pip";
 		unique_ptr<ImageIOBase> io_w = ImageIOFactory::getIO(w);
 		Image new_im = Image(image_d);
 		// new_im = image_t;
 		cout << "Number of voxels " << new_im.num_voxels() << "\n";
-		io_w->write(new_im);
+		// io_w->write(new_im);
 
 		string w2 = "C://Users//Hui Shan//Desktop//PMI//PMI-repo//Code//Assignments//data//blabla.pip";
 		unique_ptr<ImageIOBase> io_w2 = ImageIOFactory::getIO(w2);
-
+		*/
 		/*
 		// Test statistics filter				
 		test_statistics_filter(pipfile);
