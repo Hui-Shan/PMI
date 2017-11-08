@@ -25,24 +25,19 @@ namespace hmc {
 		// Constructors and destructor	
 		Image() {};
 
-		Image(dimension di) : _dimensions(di) {
-			int num = 1;
-			for (int x : di) num *= x;
-			T* _data = new T[num];
-		};
+		Image(dimension di) : _dimensions(di), _data(new T[num_voxels()]) {};
 		//Image(dimension di, T* da) : _dimensions(di), _data(da) {};
 		Image(const Image& im) : _dimensions(im._dimensions), _data(im._data) {};
 		Image(Image&& im) : _dimensions(im._dimensions), _data(im._data) {};
 
 		virtual ~Image() {
-			delete _data;
+			//delete _data;
 		};
 
 		// Assignment operators
 		Image operator=(const Image& im) {
-			int num = 1;
-			for (int x : im._dimensions) num *= x;
 			
+			int num = num_voxels();
 			T* p = new T[num];
 			for (int i = 0; i < num; ++i) {
 				p[i] = im._data[i];
@@ -68,13 +63,10 @@ namespace hmc {
 		// Basic iterators, this generates a C4996 error in Visual Studio.
 		// Disable that in main.cpp with: #pragma warning(default:4996) 
 		iterator begin() { return _data; };
-		iterator end() { return _data; };
+		iterator end() { return _data + num_voxels(); };
 		const_iterator begin() const { return _data; };
-		const_iterator end() const { 
-			int num = 1;
-			for (int x : _dimensions) num *= x;			
-			return _data + num; 
-		}; // BUG!!! WRONG
+		const_iterator end() const { return _data + num_voxels(); 
+		}; 
 
 		// Size and resize
 		dimension size() const { return _dimensions; }; // the dimension object
@@ -84,8 +76,10 @@ namespace hmc {
 			for (int x : _dimensions) if (x > 1) count++;
 			return count ; 
 		};           // number of dimensions > 1
+		
 		void resize(const dimension& d) { _dimensions = d; };        // resize this image
-		int num_voxels() {
+		
+		int num_voxels() const {
 			int num = 1;
 			for (int x : _dimensions) num *= x;
 			return num;
@@ -106,6 +100,8 @@ namespace hmc {
 			int d_ind = x;
 			return d_ind;
 		}
+
+
 
 
 	private:

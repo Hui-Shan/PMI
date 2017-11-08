@@ -1,21 +1,22 @@
 #pragma warning(default:4996)
 
 #include "ImageIOFactory.h"
-/*#include "ThresholdImageFilter.h"
-#include "StatisticsImageFilter.h"
-#include "MaskImageFilter.h"*/
+//#include "ThresholdImageFilter.h"
+//#include "StatisticsImageFilter.h"
+//#include "MaskImageFilter.h"
 
 using namespace hmc;
 
-Image::T* get_image_vec(string imfile) {
+/*Image::T get_image_vec(string imfile) {
 	unique_ptr<ImageIOBase> io = ImageIOFactory::getIO(imfile);
 	auto image_t = io->read();	
 	//delete io; io = nullptr;
 	return image_t;
-}
+}*/
 
-/*void test_statistics_filter(string imfile) {	
-	auto image = get_image_vec(imfile);
+/*void test_statistics_filter(string imfile) {
+	unique_ptr<ImageIOBase> io = ImageIOFactory::getIO(imfile);
+	auto image = io->read();
 	cout << "\nComputing statistics for " << imfile << " \n"; 
 	
 	StatisticsImageFilter sf;
@@ -29,11 +30,13 @@ Image::T* get_image_vec(string imfile) {
 	cout << "Sum " << sf.getSum() << "\n";
 	cout << "Mean " << sf.getMean() << "\n";
 	cout << "Variance " << sf.getVariance() << "\n";
-}
+}*/
 
-void test_threshold_filter(string imfile_in, T threshold, string imfile_out) {
+/*void test_threshold_filter(string imfile_in, T threshold, string imfile_out) {
 	cout << "\nThresholding " << imfile_in << " at " << threshold << ":\n";
-	auto image_in = get_image_vec(imfile_in);
+	unique_ptr<ImageIOBase> io = ImageIOFactory::getIO(imfile_in);
+	auto image_in = io->read();
+	
 
 	ThresholdImageFilter f;
 	f.setInput(image_in);
@@ -45,8 +48,8 @@ void test_threshold_filter(string imfile_in, T threshold, string imfile_out) {
 	io->write(image_out, { 109, 91, 80, 1, 1 }); // image, dimensions			
 	
 	cout << "Saved thresholded image to " << imfile_out << "\n";
-}
-
+}*/
+/*
 void test_mask_filter(string imfile_in, string imfile_out) {	
 	cout << "\nMasking away half the image of " << imfile_in << "\n";
 	unique_ptr<ImageIOBase> io2 = ImageIOFactory::getIO(imfile_in);
@@ -77,51 +80,59 @@ int main()
 {
 	string pipfile = "..//..//data//brain.pip";
 	string mhdfile = "..//..//data//brain.mhd";
-		
+	
+	string pipofile = "..//..//data//brain - Copy.pip";
+	string mhdofile = "..//..//data//brain - Copy.mhd";
+	
 	string filename;
 	string outfilename; 
 
 	// Reading and writing image files
 	try {
+		//filename = mhdfile;
+		//outfilename = mhdofile;
+
 		filename = pipfile;
+		outfilename = pipfile;
+
 		unique_ptr<ImageIOBase> io = ImageIOFactory::getIO(filename);
 
-		Image::dimension id1 = { 4,4,4,1,1 };
-		Image image1 = Image(id1);
-
-		for (Image::iterator it = image1.begin(); it != image1.end(); ++it) {
-			cout << *it << " ";
-		}
-
-		/*bool check = image1.begin() == image1.end();
-		cout << check << "\n";
-
-		Image::T* image_t = io->read();
-		Image::dimension image_d = io->read_dim();
+		Image image = io->read();
 		cout << "Read in " << filename << "\n";
-		*/
-		/*
-		//cout << image_t[0] << " " << &image_t[0] << "\n";
+		
+		Image im2 = Image(image);
+		cout << im2.num_voxels() << "\n";
+		cout << im2.nr_dims() << "\n";
+
+		Image::dimension dim2 = im2.size();
+		for (int i : dim2) {
+			cout << i << " ";
+		}
+		//cout << im2.size() << "\n";
+		//Image im2 = Image(image_t);
+
+		cout << image(0,0,0,0,0) << " " << &image(0,0,0,0,0) << "\n";
 		//cout << image_t[20000] << " " << &image_t[20000] << "\n";
 		
-		string w = "..//..//data//brain - Copy.pip";
-		unique_ptr<ImageIOBase> io_w = ImageIOFactory::getIO(w);
-		Image new_im = Image(image_d);
+		
+		unique_ptr<ImageIOBase> io_w = ImageIOFactory::getIO(outfilename);
+		Image new_im = Image(image);
 		// new_im = image_t;
 		cout << "Number of voxels " << new_im.num_voxels() << "\n";
-		// io_w->write(new_im);
+		io_w->write(new_im);
 
+		/*
 		string w2 = "C://Users//Hui Shan//Desktop//PMI//PMI-repo//Code//Assignments//data//blabla.pip";
 		unique_ptr<ImageIOBase> io_w2 = ImageIOFactory::getIO(w2);
 		*/
-		/*
-		// Test statistics filter				
-		test_statistics_filter(pipfile);
-
-		// Test threshold filter	
-		outfilename = "..//..//data//brain_out_thresholded.pip";
-		test_threshold_filter(filename, 60, outfilename);
 		
+		// Test statistics filter				
+		//test_statistics_filter(pipfile);
+		
+		// Test threshold filter	
+		//outfilename = "..//..//data//brain_out_thresholded.pip";
+		//test_threshold_filter(filename, 60, outfilename);
+		/*
 		// Test mask image filter
 		filename = mhdfile;
 		string masked_file = "..//..//data//brain_masked.pip";

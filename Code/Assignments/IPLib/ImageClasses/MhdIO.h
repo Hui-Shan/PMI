@@ -23,8 +23,7 @@ namespace hmc {
 		MhdIO(string file_in) : ImageIOBase(file_in) { filename = file_in; };
 
 		// Read and write functions
-		Image::T* read() override;
-		Image::dimension read_dim() override;
+		Image read() override;		
 		void write(const Image&) override;
 
 		string get_filename() { return filename; };
@@ -49,20 +48,11 @@ namespace hmc {
 		return path_out;
 	}
 
-	Image::dimension MhdIO::read_dim() {
-		return Image::dimension{1,2,3,4,5}; /// hard-coded
-	}
-
-	Image::T* MhdIO::read()
+	Image MhdIO::read()
 		// Reads in the image voxel values for the Mhd file named filename
-	{
-		// Declare output vector with image data
-		//Image::T* image_data;
-		//vector<short> image_vec;
-
-		// and helper variables
+	{		
+		// declare helper variables
 		int ndims;		
-		//vector<int> dimsize;
 
 		string datafile;
 		string elementtype;
@@ -78,7 +68,8 @@ namespace hmc {
 		// Get relative folder path of filename if present
 		file_path = get_relative_filepath();
 
-		Image::dimension imdim;
+		// Initialize all dimensions to be of at least size 1
+		Image::dimension mhd_dim = { 1,1,1,1,1 };
 
 		// Read in the number of dimensions, the dimension sizes, the element type
 		// and the name of the .raw file
@@ -90,16 +81,15 @@ namespace hmc {
 				remainder = line.substr(equals_idx + 3);
 				if (remainder.size() == 0) error("No value for parameter " + param + "\n");
 				if (param == ndims_str) {
-					ndims = stoi(line.substr(equals_idx + 3));
+					ndims = stoi(line.substr(equals_idx + 3));					
 				}
 				if (param == dimsize_str) {
 					stringstream ss;
 					ss << remainder;
 					int dim_idx = 0;
 					for (int dim; ss >> dim;) {
-						if (dim < 0) error("Negative dimension found\n");
-						//dimsize.push_back(dim);
-						imdim[dim_idx] = dim;
+						if (dim < 0) error("Negative dimension found\n");						
+						mhd_dim[dim_idx] = dim;
 						dim_idx++;
 					}
 				}
@@ -118,33 +108,31 @@ namespace hmc {
 		ifstream ifs_raw{ datafile, ios_base::binary };
 		if (!ifs_raw) error("Could not open ", datafile);
 
+		// Initialize image 
+		Image im_mhd = Image(mhd_dim);
+		
 		// and read in the image intensity values
-/*		for (short val; ifs_raw.read(as_bytes(val), sizeof(short));) {
-
-			image_vec.push_back(val);
-		}*/
-
-		Image::T* mhd_data = NULL;
+		Image::iterator mhd_data_it = im_mhd.begin();
 		for (Image::T val; ifs_raw.read(as_bytes(val), sizeof(short));) {
-			mhd_data = &val;
-			mhd_data++;
+			*mhd_data_it = val;
+			mhd_data_it++;
 		}
 
 		// Throw error if the number of dimensions does not concur with the dimension
-		// vector read
-		if (ndims != imdim.size()) error("Number of dimensions incorrect\n");
+		// vector read		
+		if (ndims != im_mhd.nr_dims()) error("Number of dimensions incorrect\n");
 
 		// Throw error if the dimensions were not specified correctly to get the right
 		// amount of voxels read
-		/*int num_voxels_read = image_vec.size();
+		int num_voxels_read = im_mhd.num_voxels();
 		int dim_product = 1;
-		for (int dim : dimsize) {
+		for (int dim : mhd_dim) {
 			dim_product *= dim;
 		}
 		if (num_voxels_read != dim_product) error("Number of voxels incorrect\n");
-		*/
-		//return Image(imdim);
-		return mhd_data;
+		
+		
+		return im_mhd;
 	}
 
 	void MhdIO::write(const Image& im)
@@ -158,7 +146,7 @@ namespace hmc {
 		stringstream dimensions_in;
 		for (int dim : dimensions) {
 			dimensions_in << dim << " ";
-		}
+		}		
 
 		// Get full and short filenames for .raw file 
 		string raw_filename = filename.substr(0, filename.size() - 4) + ".raw";
@@ -175,7 +163,7 @@ namespace hmc {
 		// Open .raw output filestream	
 		ofstream ofs_raw{ raw_filename, ios_base::binary };
 		if (!ofs_raw) error("Could not open " + raw_filename + "for output\n");
-
+		
 		// and write image values to .raw file
 		for (Image::const_iterator i = im.begin(); i != im.end(); ++i) {
 			ofs_raw.write(as_bytes(*i), sizeof(short));
