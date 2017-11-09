@@ -3,6 +3,19 @@
 
 int main() {
 	
+	int vv[N_DIM] = { 109, 91, 80, 1, 1 };
+	vector<int> dim_array(&vv[0], &vv[0] + N_DIM);
+
+	vector<short> mask;
+	int num_voxels = 109 * 91 * 80;
+	for (int i = 0; i < num_voxels; ++i) {
+		if (i < num_voxels / 2) mask.push_back(1);
+		else mask.push_back(0);
+	}
+
+	string halfmaskfile = "..//..//data//halfmask.pip";
+	writePIP(halfmaskfile, dim_array, mask);
+
 	// For pip file	
 	
 	string pipFilename;

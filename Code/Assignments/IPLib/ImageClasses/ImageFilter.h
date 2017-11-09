@@ -2,6 +2,7 @@
 #define IMAGEFILTER_H
 
 #include "../std_lib_facilities.h"
+#include "Image.h"
 
 namespace hmc {
 
@@ -25,25 +26,25 @@ namespace hmc {
 		ImageFilter& operator=(const ImageFilter&) = delete;
 
 		// Set the input image for this filter
-		void setInput(const vector<T>& i) {
+		void setInput(const Image& im) {
 			// The input should be const. However, we cannot store it that way in our
 			// base class. Therefor we cast away the const and store a pointer to the
 			// original data. Upon using the input data in update(), we cast it back.
-			_input = const_cast<vector<T>*>(&i);
+			_input = Image(im);// const_cast<Image*>(im);// const_cast<T*>(im.begin());
 		}
 
 		// Get the input back as a const ref
-		const vector<T>& getInput() const {
+		const Image& getInput() const {
 			// Didn't touch _input, cast it back to const;
-			return const_cast<const vector<T>&>(*_input);
+			return _input;//const_cast<const Image&>(*_input);
 		}
 
 		// Get the output image result of this filter; 
 		// available after calling update()
-		vector<T> getOutput() const { return _output; };
+		Image getOutput() const { return _output; };
 
 		// Update the image filter and compute the output
-		virtual void update()
+		void update()
 		{
 			// Didn't touch _input, cast it back to const; then execute()
 			execute(getInput());
@@ -51,16 +52,16 @@ namespace hmc {
 
 	protected:
 		// Container for the output image
-		vector<T> _output;
+		Image _output;
 
 		// This method should be overloaded in your derived class and implement the
 		// image filter that fills _output
-		virtual void execute(const vector<T>& i) = 0;
+		virtual void execute(const Image& i) = 0;
 
 	private:
 		// Temporary storage of a pointer to the image data. Because we do some
 		// const-magic, we keep it private.
-		vector<T>* _input;
+		Image _input;
 	};
 }
 

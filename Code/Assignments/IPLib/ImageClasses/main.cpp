@@ -1,20 +1,14 @@
 #pragma warning(default:4996)
 
 #include "ImageIOFactory.h"
-//#include "ThresholdImageFilter.h"
-//#include "StatisticsImageFilter.h"
-//#include "MaskImageFilter.h"
+#include "ThresholdImageFilter.h"
+#include "StatisticsImageFilter.h"
+#include "MaskImageFilter.h"
+#include "ConvolutionImageFilter.h"
 
 using namespace hmc;
 
-/*Image::T get_image_vec(string imfile) {
-	unique_ptr<ImageIOBase> io = ImageIOFactory::getIO(imfile);
-	auto image_t = io->read();	
-	//delete io; io = nullptr;
-	return image_t;
-}*/
-
-/*void test_statistics_filter(string imfile) {
+void test_statistics_filter(string imfile) {
 	unique_ptr<ImageIOBase> io = ImageIOFactory::getIO(imfile);
 	auto image = io->read();
 	cout << "\nComputing statistics for " << imfile << " \n"; 
@@ -30,115 +24,107 @@ using namespace hmc;
 	cout << "Sum " << sf.getSum() << "\n";
 	cout << "Mean " << sf.getMean() << "\n";
 	cout << "Variance " << sf.getVariance() << "\n";
-}*/
+}
 
-/*void test_threshold_filter(string imfile_in, T threshold, string imfile_out) {
+void test_threshold_filter(string imfile_in, T threshold, string imfile_out) {
 	cout << "\nThresholding " << imfile_in << " at " << threshold << ":\n";
 	unique_ptr<ImageIOBase> io = ImageIOFactory::getIO(imfile_in);
 	auto image_in = io->read();
 	
-
 	ThresholdImageFilter f;
 	f.setInput(image_in);
 	f.setThreshold(threshold);
 	f.update();
 	auto image_out = f.getOutput();
 	
-	unique_ptr<ImageIOBase> io = ImageIOFactory::getIO(imfile_out);
-	io->write(image_out, { 109, 91, 80, 1, 1 }); // image, dimensions			
+	unique_ptr<ImageIOBase> io2 = ImageIOFactory::getIO(imfile_out);
+	io2->write(image_out); // image, dimensions			
 	
 	cout << "Saved thresholded image to " << imfile_out << "\n";
-}*/
-/*
-void test_mask_filter(string imfile_in, string imfile_out) {	
+}
+
+void test_mask_filter(string imfile_in, string maskfile_in, string imfile_out) {	
 	cout << "\nMasking away half the image of " << imfile_in << "\n";
 	unique_ptr<ImageIOBase> io2 = ImageIOFactory::getIO(imfile_in);
 	auto image2 = io2->read();
 
+	unique_ptr<ImageIOBase> iom = ImageIOFactory::getIO(maskfile_in);
+	auto imagem = iom->read();
+
 	// 	
-	vector<T> mask;
-	mask.resize(image2.size());
-	for (int i = 0; i < mask.size(); ++i){ 
-		if (i < mask.size() / 2) mask[i] = 1;
-		else mask[i] = 0;
-	}
 
 	MaskImageFilter mif;
 	mif.setInput(image2);
-	mif.setInputMask(mask);
+	mif.setInputMask(imagem);
 	mif.update();
 	auto masked_image = mif.getOutput();
 
 	io2 = ImageIOFactory::getIO(imfile_out);
-	io2->write(masked_image, { 109, 91, 80, 1, 1 });
-	//delete io2; io2 = nullptr;
+	io2->write(masked_image);	
 	
 	cout << "Saved masked image to " << imfile_out << "\n";
-}*/
+}
+
+void test_convolution_filter(string imfile_in, string imfile_out, int rad_in = 3) {
+	cout << "\nConvolution the image " << imfile_in << " with gaussian kernel of size " << rad_in << "\n";
+	unique_ptr<ImageIOBase> io2 = ImageIOFactory::getIO(imfile_in);
+	auto image2 = io2->read();
+
+	ConvolutionImageFilter cif(5);
+	cif.setInput(image2);
+	cif.update();
+
+	auto conv_im = cif.getOutput();
+
+	unique_ptr<ImageIOBase> io3 = ImageIOFactory::getIO(imfile_out);
+	io3->write(conv_im);
+
+	cout << "Saved convolved image to " << imfile_out << "\n";
+
+}
 
 int main()
 {
-	string pipfile = "..//..//data//brain.pip";
-	string mhdfile = "..//..//data//brain.mhd";
+	string file = "..//..//data//brain";
+	string ext;
+	string mhd = ".mhd";
+	string pip = ".pip";
+	ext = mhd;
 	
-	string pipofile = "..//..//data//brain - Copy.pip";
-	string mhdofile = "..//..//data//brain - Copy.mhd";
-	
+		
 	string filename;
 	string outfilename; 
 
 	// Reading and writing image files
 	try {
-		//filename = mhdfile;
-		//outfilename = mhdofile;
+		
+		filename = file + ext;		
 
-		filename = pipfile;
-		outfilename = pipfile;
-
+		
 		unique_ptr<ImageIOBase> io = ImageIOFactory::getIO(filename);
-
 		Image image = io->read();
 		cout << "Read in " << filename << "\n";
-		
-		Image im2 = Image(image);
-		cout << im2.num_voxels() << "\n";
-		cout << im2.nr_dims() << "\n";
-
-		Image::dimension dim2 = im2.size();
-		for (int i : dim2) {
-			cout << i << " ";
-		}
-		//cout << im2.size() << "\n";
-		//Image im2 = Image(image_t);
-
-		cout << image(0,0,0,0,0) << " " << &image(0,0,0,0,0) << "\n";
-		//cout << image_t[20000] << " " << &image_t[20000] << "\n";
-		
-		
-		unique_ptr<ImageIOBase> io_w = ImageIOFactory::getIO(outfilename);
-		Image new_im = Image(image);
-		// new_im = image_t;
-		cout << "Number of voxels " << new_im.num_voxels() << "\n";
-		io_w->write(new_im);
-
-		/*
-		string w2 = "C://Users//Hui Shan//Desktop//PMI//PMI-repo//Code//Assignments//data//blabla.pip";
-		unique_ptr<ImageIOBase> io_w2 = ImageIOFactory::getIO(w2);
-		*/
-		
+				
 		// Test statistics filter				
-		//test_statistics_filter(pipfile);
+		test_statistics_filter(filename);
 		
 		// Test threshold filter	
-		//outfilename = "..//..//data//brain_out_thresholded.pip";
-		//test_threshold_filter(filename, 60, outfilename);
-		/*
+		outfilename = file + "_out_thresholded" + ext;		
+		test_threshold_filter(filename, 60, outfilename);
+		
 		// Test mask image filter
-		filename = mhdfile;
-		string masked_file = "..//..//data//brain_masked.pip";
-		test_mask_filter(filename, masked_file);
-
-		// Test convolution filter */
+		string masked_file = file + "_masked" + ext;
+		string maskfile = "..//..//data//halfmask.pip";
+		
+		test_mask_filter(filename, maskfile, masked_file);
+		
+		// Test convolution filter
+		for (int conv_rad = 0; conv_rad < 2; ++conv_rad) {
+			outfilename = file + "_out_convolved_" + to_string(conv_rad) + ext;
+			test_convolution_filter(filename, outfilename, conv_rad);
+		}
+		
+		
 
 	}
 	catch (exception &e) {

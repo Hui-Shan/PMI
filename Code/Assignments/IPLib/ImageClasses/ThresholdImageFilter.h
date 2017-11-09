@@ -18,20 +18,19 @@ namespace hmc {
 		T getThreshold() const { return _t; }
 		void setThreshold(T threshold) { _t = threshold; }
 
-	protected:
+	protected:		
 		// Override the execute function
-		virtual void execute(const vector<T>& i) override
+		virtual void execute(const Image& im) override
 		{
 			// Clear and resize the output
-			_output.clear();
-			_output.resize(i.size());
+			_output = Image(im.size());
 
 			// Bring the threshold parameter within scope, so it can be given to
 			// the lambda initializer
 			const auto t = _t;
 
-			// Do the thresholding with an std::transform, see Chapter 21
-			transform(begin(i), end(i), begin(_output),
+			// Do the thresholding with an std::transform, see Chapter 21			
+			transform(im.begin(), im.end(), _output.begin(),
 				[t](T value) {return value > t ? T(1) : T(0); }
 			);
 		}

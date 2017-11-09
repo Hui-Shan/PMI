@@ -21,13 +21,11 @@ namespace hmc {
 	public:
 		// Constructor
 		MhdIO(string file_in) : ImageIOBase(file_in) { filename = file_in; };
-
-		// Read and write functions
+				
+		// declaration of read and write functions
 		Image read() override;		
 		void write(const Image&) override;
-
-		string get_filename() { return filename; };
-
+		
 	protected:
 		string filename;
 
@@ -53,7 +51,6 @@ namespace hmc {
 	{		
 		// declare helper variables
 		int ndims;		
-
 		string datafile;
 		string elementtype;
 		string file_path;
@@ -74,12 +71,18 @@ namespace hmc {
 		// Read in the number of dimensions, the dimension sizes, the element type
 		// and the name of the .raw file
 		while (!ifs_mhd.eof()) {
+			// read in line
 			getline(ifs_mhd, line);
 			if (line.size() > 0) {
+				// find parameter name and values
 				int equals_idx = line.find_first_of(" = ");
 				param = line.substr(0, equals_idx);
-				remainder = line.substr(equals_idx + 3);
+				remainder = line.substr(equals_idx + 3);				
+				
+				// check if there are values for the parameter
 				if (remainder.size() == 0) error("No value for parameter " + param + "\n");
+
+				// check which parameter name is read, and handle values accordingly
 				if (param == ndims_str) {
 					ndims = stoi(line.substr(equals_idx + 3));					
 				}
@@ -94,7 +97,7 @@ namespace hmc {
 					}
 				}
 				if (param == eltype_str) {
-					elementtype = remainder;
+					elementtype = remainder;					
 					if (elementtype != MET_SHORT & elementtype != int16)
 						error(filename + "has wrong data type\n");
 				}
@@ -126,11 +129,8 @@ namespace hmc {
 		// amount of voxels read
 		int num_voxels_read = im_mhd.num_voxels();
 		int dim_product = 1;
-		for (int dim : mhd_dim) {
-			dim_product *= dim;
-		}
-		if (num_voxels_read != dim_product) error("Number of voxels incorrect\n");
-		
+		for (int dim : mhd_dim) dim_product *= dim;		
+		if (num_voxels_read != dim_product) error("Number of voxels incorrect\n");		
 		
 		return im_mhd;
 	}
@@ -141,8 +141,8 @@ namespace hmc {
 		ofstream ofs_mhd{ filename };
 		if (!ofs_mhd) error("Could not open " + filename + "for output\n");
 		Image::dimension dimensions = im.size();
-		// Make string listing dimension sizes
 		
+		// Make string listing dimension sizes		
 		stringstream dimensions_in;
 		for (int dim : dimensions) {
 			dimensions_in << dim << " ";
@@ -153,7 +153,7 @@ namespace hmc {
 		int last_slash_index = raw_filename.find_last_of(path_separator);
 		string short_raw_filename = raw_filename.substr(last_slash_index + 1);
 
-		// Write .mhd file
+		// Write (basic) .mhd file
 		ofs_mhd << "MHD:\n";
 		ofs_mhd << ndims_str << equals_str << im.nr_dims() << "\n";
 		ofs_mhd << dimsize_str << equals_str << dimensions_in.str() << "\n";

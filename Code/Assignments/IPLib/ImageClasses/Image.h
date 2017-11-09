@@ -23,29 +23,27 @@ namespace hmc {
 		typedef const T&  const_reference;
 
 		// Constructors and destructor	
-		Image() {};
-
-		Image(dimension di) : _dimensions(di), _data(new T[num_voxels()]) {};
-		//Image(dimension di, T* da) : _dimensions(di), _data(da) {};
+		// default constructor
+		Image() {}; 
+		// constructor with dimension
+		Image(dimension di) : _dimensions(di), _data(new T[num_voxels()]) {};		
+		// copy constructor
 		Image(const Image& im) : _dimensions(im._dimensions), _data(im._data) {};
+		// copy reference constructor
 		Image(Image&& im) : _dimensions(im._dimensions), _data(im._data) {};
-
-		virtual ~Image() {
-			//delete _data;
-		};
+		// destructor
+		virtual ~Image() { _data = nullptr; };
 
 		// Assignment operators
 		Image operator=(const Image& im) {
 			
 			int num = num_voxels();
 			T* p = new T[num];
-			for (int i = 0; i < num; ++i) {
-				p[i] = im._data[i];
-			}
+			for (int i = 0; i < num; ++i) p[i] = im._data[i];			
 
 			_data = p;
 			_dimensions = im._dimensions;
-
+			
 			return *this;
 		};
 		
@@ -65,8 +63,7 @@ namespace hmc {
 		iterator begin() { return _data; };
 		iterator end() { return _data + num_voxels(); };
 		const_iterator begin() const { return _data; };
-		const_iterator end() const { return _data + num_voxels(); 
-		}; 
+		const_iterator end() const { return _data + num_voxels(); }; 		
 
 		// Size and resize
 		dimension size() const { return _dimensions; }; // the dimension object
@@ -86,9 +83,9 @@ namespace hmc {
 		};
 
 		// Pixel value lookup, should support out-of-image coordinates by clamping to 0..dim
-		value_type operator()(int x = 0, int y = 0, int z = 0, int c = 0, int t = 0) const {
-			int ind = x;
-			return _data[ind]; 
+		value_type operator()(int x = 0, int y = 0, int z = 0, int c = 0, int t = 0) const {			
+			const int d_ind = get_data_index(x, y, z, c, t);
+			return _data[d_ind]; 
 		};
 
 		reference operator()(int x = 0, int y = 0, int z = 0, int c = 0, int t = 0) {
@@ -96,9 +93,24 @@ namespace hmc {
 			return _data[ind];
 		};
 
-		int get_data_index(int x = 0, int y = 0, int z = 0, int c = 0, int t = 0) {
-			int d_ind = x;
-			return d_ind;
+		/*int get_data_index(int x = 0, int y = 0, int z = 0, int c = 0, int t = 0) {
+			int xDim = _dimensions[0];
+			int yDim = _dimensions[1];
+			int zDim = _dimensions[2];
+			int cDim = _dimensions[3];
+			int tDim = _dimensions[4];
+			int d_ind = (t * xDim * yDim * zDim * cDim) + (c * xDim * yDim * zDim) + (z * xDim * yDim) + (y * xDim) + x ;
+			return _data[d_ind];
+		}*/
+		
+		int get_data_index(int x = 0, int y = 0, int z = 0, int c = 0, int t = 0) const {
+			int xDim = _dimensions[0];
+			int yDim = _dimensions[1];
+			int zDim = _dimensions[2];
+			int cDim = _dimensions[3];
+			int tDim = _dimensions[4];
+			int d_ind = (t * xDim * yDim * zDim * cDim) + (c * xDim * yDim * zDim) + (z * xDim * yDim) + (y * xDim) + x;
+			return _data[d_ind];
 		}
 
 

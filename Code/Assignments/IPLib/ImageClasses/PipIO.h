@@ -18,9 +18,9 @@ namespace hmc {
 			filename = file_in; 
 		};
 		
+		// declaration of read and write functions
 		Image read() override;		
-		void write(const Image&) override;
-		string get_filename() { return filename; };
+		void write(const Image&) override;		
 
 	protected:
 		string filename;	
@@ -41,7 +41,7 @@ namespace hmc {
 		ifs.read(as_bytes(datatype), sizeof(unsigned char));
 
 		// Throws error if datatype is not a short
-		if (datatype != short_type) error(filename + "has wrong data type");
+		if (datatype != short_type) error(filename + " has wrong data type");
 
 		// Read in the dimensions of the file
 		int Nx, Ny, Nz, Nc, Nt;
@@ -57,18 +57,16 @@ namespace hmc {
 		if (Nx < 1 || Ny < 1 || Nz < 1 || Nc < 1 || Nt < 1) {
 			error("Negative dimensions error\n");
 		}
-		
+
+		// Initialize new image object with read in dimensions
 		Image im = Image(pip_dim);
 
-		cout <<  im.begin() << im.end() << "\n";
-
-		// Reads in the values of the image into a vector of shorts
+		// Reads in the values of the image
 		Image::iterator pip_data_it = im.begin();
 		for (Image::T val; ifs.read(as_bytes(val), sizeof(short));) {
 			*pip_data_it = val;			
 			pip_data_it++;
-		}
-		cout << "iterated over image";
+		}		
 
 		// Throws error if the number of voxels is not the same as the product of the 
 		// dimensions
