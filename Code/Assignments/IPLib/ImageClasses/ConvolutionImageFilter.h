@@ -68,38 +68,43 @@ namespace hmc {
 			unsigned int dimz = im.dim(2);
 			unsigned int dimc = im.dim(3);
 			unsigned int dimt = im.dim(4);
-			T vox_val; 
-			T gauss_val; 
-			T vox_sum;
-			int num_in_range;
+			T vox_val = 0.0; 
+			T gauss_val = 0.0; 
+			T vox_sum = 0.0;
+			T num_in_range = 0.0;
 
 			for (unsigned int t{ 0 }; t < dimt; ++t) {
 				for (unsigned int c{ 0 }; c < dimc; ++c) {
 					for (unsigned int z{ 0 }; z < dimz; ++z) {
-						cout << im(0, 0, z, c, t) << " " << _output(0, 0, z, c, t) << " ";
+						//cout << im(0, 0, z, c, t) << " " << _output(0, 0, z, c, t) << " ";
 						for (unsigned int y{ 0 }; y < dimy; ++y) {
 							for (unsigned int x{ 0 }; x < dimx; ++x) {
-								num_in_range = 0;
+								num_in_range = 0.0;
 								vox_sum = 0.0;
-								min_x = (0 < x - _rad) ? 0 : (x - _rad);
-								max_x = (x + _rad > dimx - 1) ? (dimx - 1) : (x + _rad);
-								min_y = (0 < y - _rad) ? 0 : (y - _rad);
-								max_y = (y + _rad > dimy - 1) ? (dimy - 1) : (y + _rad);
-								min_z = (0 < z - _rad) ? 0 : (z - _rad);
-								max_z = (z + _rad > dimz - 1) ? (dimz - 1) : (z + _rad);
+								min_x = (0 > (x - _rad)) ? 0 : (x - _rad);
+								max_x = ((x + _rad) < (dimx - 1)) ? (dimx - 1) : (x + _rad);
+								min_y = (0 > (y - _rad)) ? 0 : (y - _rad);
+								max_y = ((y + _rad) < (dimy - 1)) ? (dimy - 1) : (y + _rad);
+								min_z = (0 > (z - _rad)) ? 0 : (z - _rad);
+								max_z = ((z + _rad) < (dimz - 1)) ? (dimz - 1) : (z + _rad);
 								
 								for (unsigned int it_x = min_x; it_x < max_x; ++it_x) {
+
 									for (unsigned int it_y = min_y; it_y < max_y; ++it_y) {
 										for (unsigned int it_z = min_z; it_z < max_z; ++it_z) {
 											vox_val = im(it_x, it_y, it_z, c, t);
 											gauss_val = gauss3D(it_x, x, it_y, y, it_z, z, _rad);
 											vox_sum += vox_val * gauss_val;
 											num_in_range += 1; 
+											
 										}
 									}
 									
 								}
-								_output(x, y, z, c, t) = vox_sum/T(num_in_range);
+								
+								cout << x << "," << y << "," << z << " : " << vox_sum << " " << num_in_range << "\n";// sum / num_in_range << " ";	
+								//cout << _output(x,y,z,t)
+								//_output(x, y, z, c, t) = vox_sum/T(num_in_range);
 								//*/
 								//_output(x, y, z, c, t) = im(x, y, z, c, t);
 							}
