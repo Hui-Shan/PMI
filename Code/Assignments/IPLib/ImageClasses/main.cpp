@@ -66,11 +66,11 @@ void test_mask_filter(string imfile_in, string maskfile_in, string imfile_out) {
 }
 
 void test_convolution_filter(string imfile_in, string imfile_out, int rad_in = 3) {
-	cout << "\nConvolution the image " << imfile_in << " with gaussian kernel of size " << rad_in << "\n";
+	cout << "\nConvolution the image " << imfile_in << " with gaussian kernel with radius " << rad_in << "\n";
 	unique_ptr<ImageIOBase> io2 = ImageIOFactory::getIO(imfile_in);
 	auto image2 = io2->read();
 
-	ConvolutionImageFilter cif(5);
+	ConvolutionImageFilter cif(rad_in);
 	cif.setInput(image2);
 	cif.update();
 
@@ -83,13 +83,19 @@ void test_convolution_filter(string imfile_in, string imfile_out, int rad_in = 3
 
 }
 
+double gauss3D(int xi, int x0, int yi, int y0, int zi, int z0, double sigma = 1.0) {
+	double coord_sum = T(pow(xi - x0, 2) + pow(yi - y0, 2) + pow(zi - z0, 2));
+	double g = 1 / (2 * M_PI * sigma) * exp(-coord_sum / pow(sigma, 2));
+	return g;
+}
+
 int main()
 {
 	string file = "..//..//data//brain";
 	string ext;
 	string mhd = ".mhd";
 	string pip = ".pip";
-	ext = mhd;
+	ext = pip;
 	
 		
 	string filename;
@@ -97,14 +103,17 @@ int main()
 
 	// Reading and writing image files
 	try {
-		
-		filename = file + ext;		
 
-		
+		filename = file + ext;
+
 		unique_ptr<ImageIOBase> io = ImageIOFactory::getIO(filename);
 		Image image = io->read();
 		cout << "Read in " << filename << "\n";
-				
+		
+		/*string pppfile = "..//..//data//specialfile.pip";
+		unique_ptr<ImageIOBase> io_ppp = ImageIOFactory::getIO(pppfile);
+		io_ppp->write(imagep);*/
+		
 		// Test statistics filter				
 		test_statistics_filter(filename);
 		
@@ -119,10 +128,39 @@ int main()
 		test_mask_filter(filename, maskfile, masked_file);
 		
 		// Test convolution filter
-		for (int conv_rad = 0; conv_rad < 2; ++conv_rad) {
+		/*for (int conv_rad = 1; conv_rad < 2; ++conv_rad) {
+			// 
+			cout << "Start convolution with radius of " << conv_rad << " ";
 			outfilename = file + "_out_convolved_" + to_string(conv_rad) + ext;
 			test_convolution_filter(filename, outfilename, conv_rad);
+			cout << "Done convolution, written to " << outfilename << "\n";
+		}*/
+		
+
+		//cout << convkernel.size(); 
+		//Image::const_iterator cit; 
+		//for (cit = convkernel.begin(); cit != convkernel.end(); ++cit) {
+//			cout << *cit << "\n";
+		//}
+
+		
+		/*double factor = 1 / pow(sqrt(2 * M_PI) * rad, 3);
+		//cout << rad << " " << factor << "\n";
+		double sum = 0.0;
+		for (int z = -rad; z <= rad; ++z) {
+			for (int y = -rad; y <= rad; ++y) {
+				for (int x = -rad; x <= rad; ++x) {
+					//cout << x << "," << y << "," << z << "\n";					
+					coord_sum = double(pow(x, 2) + pow(y, 2) + pow(z, 2)) / (double(pow(rad, 2) * 2));
+					cout << factor * exp(-coord_sum) << "\n";
+					sum += factor * exp(-coord_sum);
+				}
+			}		
+			//cout << coord_sum << "--> exp " << exp(-coord_sum) << "\n";
 		}
+		cout << " " << sum << "\n";
+
+		*/
 		
 		
 

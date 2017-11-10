@@ -2,4 +2,4 @@ MHD:
 NDims = 3
 DimSize = 109 91 80 1 1 
 ElementType = MET_SHORT
-ElementDataFile = brain_out_thresholded.raw
+ElementDataFile = brain_masked.raw

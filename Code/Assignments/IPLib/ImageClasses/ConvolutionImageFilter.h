@@ -1,12 +1,14 @@
 #define _USE_MATH_DEFINES
 #include <cmath>
+#include "math.h"
+
 
 #ifndef CONVOLUTIONIMAGEFILTER_H
 #define CONVOLUTIONIMAGEFILTER_H
 
 #include "ImageFilter.h"
 
-#include "math.h"
+
 namespace hmc {
 	class ConvolutionImageFilter : public ImageFilter
 	{
@@ -53,65 +55,64 @@ namespace hmc {
 
 		// This method should be overloaded in your derived class and implement the
 		// image filter that fills _output		
-		virtual void execute(const Image& im) {			
+		void execute(const Image& im) {			
 			// Clear and resize the output
-			_output = Image(im);
+			Image::dimension imdim = im.size();
+			_output = Image(imdim);
+			cout << "num voxels" << _output.num_voxels() << "\n";
+			//cout << *_output.begin() << _output(0, 0, 0, 0, 0) << "\n"; 
 			
-			unsigned int min_x;
-			unsigned int max_x;
-			unsigned int min_y;
-			unsigned int max_y;
-			unsigned int min_z;
-			unsigned int max_z;
-			unsigned int dimx = im.dim(0);
-			unsigned int dimy = im.dim(1);
-			unsigned int dimz = im.dim(2);
-			unsigned int dimc = im.dim(3);
-			unsigned int dimt = im.dim(4);
-			T vox_val = 0.0; 
-			T gauss_val = 0.0; 
-			T vox_sum = 0.0;
-			T num_in_range = 0.0;
-
-			for (unsigned int t{ 0 }; t < dimt; ++t) {
+			int dimx = imdim[0];
+			int dimy = imdim[1];
+			int dimz = imdim[2];
+			int dimc = imdim[3];
+			int dimt = imdim[4];
+			
+			for (unsigned int t{ 0 }; t < dimt; ++t) {				
 				for (unsigned int c{ 0 }; c < dimc; ++c) {
-					for (unsigned int z{ 0 }; z < dimz; ++z) {
-						//cout << im(0, 0, z, c, t) << " " << _output(0, 0, z, c, t) << " ";
-						for (unsigned int y{ 0 }; y < dimy; ++y) {
-							for (unsigned int x{ 0 }; x < dimx; ++x) {
-								num_in_range = 0.0;
-								vox_sum = 0.0;
-								min_x = (0 > (x - _rad)) ? 0 : (x - _rad);
-								max_x = ((x + _rad) < (dimx - 1)) ? (dimx - 1) : (x + _rad);
-								min_y = (0 > (y - _rad)) ? 0 : (y - _rad);
-								max_y = ((y + _rad) < (dimy - 1)) ? (dimy - 1) : (y + _rad);
-								min_z = (0 > (z - _rad)) ? 0 : (z - _rad);
-								max_z = ((z + _rad) < (dimz - 1)) ? (dimz - 1) : (z + _rad);
-								
-								for (unsigned int it_x = min_x; it_x < max_x; ++it_x) {
-
-									for (unsigned int it_y = min_y; it_y < max_y; ++it_y) {
-										for (unsigned int it_z = min_z; it_z < max_z; ++it_z) {
-											vox_val = im(it_x, it_y, it_z, c, t);
-											gauss_val = gauss3D(it_x, x, it_y, y, it_z, z, _rad);
-											vox_sum += vox_val * gauss_val;
-											num_in_range += 1; 
-											
-										}
-									}
+					for (unsigned int x{ 0 }; x < dimx; ++x) {
 									
-								}
+						
+						for (unsigned int y{ 0 }; y < dimy; ++y) {
+							for (unsigned int z{ 0 }; z < dimx; ++z) {
+								int index = int(_output.get_data_index(x, y, z, 0, 0));
+								cout << "index " << index;
+								//cout << *(_output.begin() + index) << " "; 
+								//cout << _output(0, 0, 0, 0, 0) << " ";
+								//cout << _output(x, y, z, 0, 0) << " vs " << T(8) << "\n";
 								
-								cout << x << "," << y << "," << z << " : " << vox_sum << " " << num_in_range << "\n";// sum / num_in_range << " ";	
-								//cout << _output(x,y,z,t)
-								//_output(x, y, z, c, t) = vox_sum/T(num_in_range);
-								//*/
-								//_output(x, y, z, c, t) = im(x, y, z, c, t);
+								//cout << x << " " << y << " " << z << " " << c << " " << t << "\n";								
+								double vox_val = _output(x, y, z, c, t);																								
+								double vox_sum = 0.0;
+								double gauss_val;
+								
+								for (int zi = -_rad; zi <= _rad; ++zi) {								
+									for (int yi = -_rad; yi <= _rad; ++yi) {
+										for (int xi = -_rad; xi <= _rad; ++xi) {
+																						
+											gauss_val = gauss3D(xi, yi, zi, _rad);
+											//cout << zi << ": " << yi << ": " << xi << " " << gauss_val << "\n";
+											vox_sum += double(vox_val * gauss_val);																						
+										}										
+									}
+								}/*
+								if (x % 50 == 0 & y % 50 == 0 & z % 50 == 0) {							
+									cout << _output(x,y,z,c,t) << " " << vox_val << " vox sum " << T(vox_sum) << "\n";
+								}
+								//	cout << x << "," << y << "," << z << ", " << c << ", " << t << "\n";
+								//	cout << im(x,y,z,c,t) << " " << vox_sum << " " << num_in_range << "\n";
+								//}								
+								_output(x, y, z, c, t) = 0;// vox_sum / double(pow(2 * _rad + 1, 3)); // im(x, y, z, c, t)*0.5*gauss3D(0, 0, 0, _rad);// vox_sum;
+								if (_output(x, y, z, c, t) != im(x, y, z, c, t)) {
+									cout << x << " " << y << " " << z << " " << c << " " << t << "\n";
+								}*/
+								//_output(x, y, z, 0, 0) = 0;// vox_sum / double(pow(2 * _rad + 1, 3)); // im(x, y, z, c, t)*0.5*gauss3D(0, 0, 0, _rad);// vox_sum;
 							}
 						}
 					}
 				}
 			}
+			//cout << "num voxels " << voxls; 
 
 
 		};
@@ -124,13 +125,22 @@ namespace hmc {
 		// Temporary storage of a pointer to the image data. Because we do some
 		// const-magic, we keep it private.		
 		int _rad;
+
+		Image _kernel; 
 		
 		// Function to return the Gaussian kernel value for voxel (xi, yi, zi) wrt
 		// center voxel (x0, y0, z0)
-		T gauss3D(int xi, int x0, int yi, int y0, int zi, int z0, double sigma=1.0) {
-			T coord_sum = T(pow(xi - x0, 2) + pow(yi - y0, 2) + pow(zi - z0, 2));
-			T g =  1 / (2 * M_PI * sigma) * exp(- coord_sum / pow(sigma, 2)); 
-			return g;
+		double gauss3D(int dx, int dy, int dz, int rad=1.0) {			
+			double val = 1.0;
+			if (rad > 0) {
+				double factor = 1;// / pow(sqrt(2 * M_PI * rad), 3);
+				double numerator = double(pow(dx, 2) + pow(dy, 2) + pow(dz, 2));
+				double denominator = double(pow(rad, 2) * 2);
+
+				val = factor * exp(-numerator / denominator);
+			}
+			
+			return val;
 		}
 	};
 }

@@ -26,7 +26,12 @@ namespace hmc {
 		// default constructor
 		Image() {}; 
 		// constructor with dimension
-		Image(dimension di) : _dimensions(di), _data(new T[num_voxels()]) {};		
+		Image(dimension di) : _dimensions(di) {
+			int num = 1;
+			for (int x : di) num *= x;
+			
+			_data = new T[num];
+		};		
 		// copy constructor
 		Image(const Image& im) : _dimensions(im._dimensions), _data(im._data) {};
 		// copy reference constructor
@@ -53,7 +58,7 @@ namespace hmc {
 			_dimensions = im._dimensions;
 
 			im._data = nullptr;
-			im._dimensions = dimension{};
+			//im._dimensions = dimension{};
 			
 			return *this;
 		};
@@ -84,26 +89,38 @@ namespace hmc {
 
 		// Pixel value lookup, should support out-of-image coordinates by clamping to 0..dim
 		value_type operator()(int x = 0, int y = 0, int z = 0, int c = 0, int t = 0) const {			
-			const int d_ind = get_data_index(x, y, z, c, t);
-			return _data[d_ind]; 
+			x = clamp(x, dim(0)); 
+			y = clamp(y, dim(1));
+			z = clamp(z, dim(2));
+			c = clamp(c, dim(3));
+			t = clamp(t, dim(4));
+
+			const int d_ind = get_data_index(x, y, z, c, t);			
+			return _data[d_ind];
 		};
 
 		reference operator()(int x = 0, int y = 0, int z = 0, int c = 0, int t = 0) {
+			x = clamp(x, dim(0));
+			y = clamp(y, dim(1));
+			z = clamp(z, dim(2));
+			c = clamp(c, dim(3));
+			t = clamp(t, dim(4));
+						
 			int ind = get_data_index(x, y, z, c, t);
 			return _data[ind];
 		};
-
-		/*int get_data_index(int x = 0, int y = 0, int z = 0, int c = 0, int t = 0) {
+		
+		int get_data_index(int x = 0, int y = 0, int z = 0, int c = 0, int t = 0) const {
 			int xDim = _dimensions[0];
 			int yDim = _dimensions[1];
 			int zDim = _dimensions[2];
 			int cDim = _dimensions[3];
 			int tDim = _dimensions[4];
-			int d_ind = (t * xDim * yDim * zDim * cDim) + (c * xDim * yDim * zDim) + (z * xDim * yDim) + (y * xDim) + x ;
+			int d_ind = (t * xDim * yDim * zDim * cDim) + (c * xDim * yDim * zDim) + (z * xDim * yDim) + (y * xDim) + x;
 			return _data[d_ind];
-		}*/
-		
-		int get_data_index(int x = 0, int y = 0, int z = 0, int c = 0, int t = 0) const {
+		}
+
+		int get_data_index(int x = 0, int y = 0, int z = 0, int c = 0, int t = 0) {
 			int xDim = _dimensions[0];
 			int yDim = _dimensions[1];
 			int zDim = _dimensions[2];
@@ -119,6 +136,18 @@ namespace hmc {
 	private:
 		dimension _dimensions;
 		T* _data;
+
+		int clamp(int coord, unsigned int max_coord) const {			
+			if (coord < 0) coord = 0;
+			if (coord > max_coord - 1) coord = max_coord - 1;
+			return coord;			
+		}
+
+		int clamp(int coord, unsigned int max_coord) {
+			if (coord < 0) coord = 0;
+			if (coord > max_coord - 1) coord = max_coord - 1;
+			return coord;
+		}
 	};
 
 
