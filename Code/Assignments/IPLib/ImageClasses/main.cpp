@@ -95,7 +95,7 @@ int main()
 	string ext;
 	string mhd = ".mhd";
 	string pip = ".pip";
-	ext = pip;
+	ext = mhd;
 	
 		
 	string filename;
@@ -104,15 +104,44 @@ int main()
 	// Reading and writing image files
 	try {
 
+		// test constructors
+
+		// default
+/*		{
+			Image i1 = Image();
+		
+			// dimension 
+			Image::dimension d2 = { 4,4,4,1,1 };
+			Image i2 = Image(d2);
+			
+			// copy
+			Image i3 = Image(i2);
+
+			cout << "i2.begin() " <<  i2.begin() << " i3.begin() " << i3.begin() << "\n";
+
+			// move 
+			Image& i4 = Image(i2);
+			cout << "i4.begin() " << i4.begin() << " i2.begin() " << i2.begin() << "\n";
+
+			Image i5 = i2;
+
+			cout << "i2.begin() " << i2.begin() << " i5.begin() " << i5.begin() << "\n";
+
+		}
+*/		
 		filename = file + ext;
 
 		unique_ptr<ImageIOBase> io = ImageIOFactory::getIO(filename);
 		Image image = io->read();
 		cout << "Read in " << filename << "\n";
 		
-		/*string pppfile = "..//..//data//specialfile.pip";
+		image(-1, 1000, 0, 1, 1);
+		image(-1, 1000, 0, 1, 1) = 2* image(-1, 1000, 0, 1, 1);
+		image(-1, 1000, 0, 1, 1);
+
+		string pppfile = "..//..//data//test_write" + ext;
 		unique_ptr<ImageIOBase> io_ppp = ImageIOFactory::getIO(pppfile);
-		io_ppp->write(imagep);*/
+		io_ppp->write(image);
 		
 		// Test statistics filter				
 		test_statistics_filter(filename);
@@ -128,13 +157,13 @@ int main()
 		test_mask_filter(filename, maskfile, masked_file);
 		
 		// Test convolution filter
-		/*for (int conv_rad = 1; conv_rad < 2; ++conv_rad) {
+		for (int conv_rad = 1; conv_rad < 2; ++conv_rad) {
 			// 
 			cout << "Start convolution with radius of " << conv_rad << " ";
 			outfilename = file + "_out_convolved_" + to_string(conv_rad) + ext;
 			test_convolution_filter(filename, outfilename, conv_rad);
 			cout << "Done convolution, written to " << outfilename << "\n";
-		}*/
+		}
 		
 
 		//cout << convkernel.size(); 

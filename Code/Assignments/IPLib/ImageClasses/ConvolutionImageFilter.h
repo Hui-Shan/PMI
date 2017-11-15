@@ -15,8 +15,8 @@ namespace hmc {
 
 	public:
 		// Constructor.
-		ConvolutionImageFilter() : _rad(0) {};
-		ConvolutionImageFilter(int rad) : _rad(rad) {};
+		//ConvolutionImageFilter() : _rad(0) {};
+		ConvolutionImageFilter(int rad=0) : _rad(rad) {};
 
 		// Destructor. This class does not own any free store allocated objects; 
 		// but derived classes might, so it's virtual and empty
@@ -56,12 +56,20 @@ namespace hmc {
 		// This method should be overloaded in your derived class and implement the
 		// image filter that fills _output		
 		void execute(const Image& im) {			
-			// Clear and resize the output
-			Image::dimension imdim = im.size();
-			_output = Image(imdim);
-			cout << "num voxels" << _output.num_voxels() << "\n";
-			//cout << *_output.begin() << _output(0, 0, 0, 0, 0) << "\n"; 
 			
+			// Make the output a zero valued image of size of the input
+			Image::dimension imdim = im.size();
+			
+			Image i2 = Image(imdim);
+			cout << "i2(0, 0, 0, 0, 0)" << i2(0, 0, 0, 0, 0) << "\n";
+
+			_output = Image(imdim);
+			cout << "_output(0, 0, 0, 0, 0)=" <<  _output(0, 0, 0, 0, 0) << " im(0, 0, 0, 0, 0)=" << im(0, 0, 0, 0, 0) << "\n";
+			
+			//for (int x : _output.size()) cout << x << " ";
+			//cout << "\n";
+
+			// Get all the dimensions
 			int dimx = imdim[0];
 			int dimy = imdim[1];
 			int dimz = imdim[2];
@@ -70,35 +78,37 @@ namespace hmc {
 			
 			for (unsigned int t{ 0 }; t < dimt; ++t) {				
 				for (unsigned int c{ 0 }; c < dimc; ++c) {
-					for (unsigned int x{ 0 }; x < dimx; ++x) {
-									
-						
+					for (unsigned int z{ 0 }; z < dimz; ++z) {
 						for (unsigned int y{ 0 }; y < dimy; ++y) {
-							for (unsigned int z{ 0 }; z < dimx; ++z) {
-								int index = int(_output.get_data_index(x, y, z, 0, 0));
-								cout << "index " << index;
-								//cout << *(_output.begin() + index) << " "; 
-								//cout << _output(0, 0, 0, 0, 0) << " ";
-								//cout << _output(x, y, z, 0, 0) << " vs " << T(8) << "\n";
+							for (unsigned int x{ 0 }; x < dimx; ++x) {
 								
-								//cout << x << " " << y << " " << z << " " << c << " " << t << "\n";								
-								double vox_val = _output(x, y, z, c, t);																								
-								double vox_sum = 0.0;
+								/*
+								//int index = int(_output.get_data_index(x, y, z, c, t));
+								T vox_val = im(x, y, z, c, t);																								
+								T vox_sum = 0.0;
 								double gauss_val;
 								
 								for (int zi = -_rad; zi <= _rad; ++zi) {								
 									for (int yi = -_rad; yi <= _rad; ++yi) {
-										for (int xi = -_rad; xi <= _rad; ++xi) {
-																						
-											gauss_val = gauss3D(xi, yi, zi, _rad);
-											//cout << zi << ": " << yi << ": " << xi << " " << gauss_val << "\n";
-											vox_sum += double(vox_val * gauss_val);																						
+										for (int xi = -_rad; xi <= _rad; ++xi) {																						
+											gauss_val = gauss3D(xi, yi, zi, _rad);											
+											vox_sum += T(vox_val * gauss_val);																						
+											//cout << gauss_val << " " << vox_val << " " << vox_sum << "\n";
+											if (zi == 0 & yi == 0 & xi == 0 & (x%20)==0 & (y%20)==0 & (z%20)==0)
+												cout << gauss_val << " " << vox_sum << " || ";
 										}										
 									}
-								}/*
-								if (x % 50 == 0 & y % 50 == 0 & z % 50 == 0) {							
-									cout << _output(x,y,z,c,t) << " " << vox_val << " vox sum " << T(vox_sum) << "\n";
+								}*/
+
+								if (x % 50 == 0 & y % 50 == 0 & z % 50 == 0) {
+									cout << "pre:  " << im(x, y, z, c, t) << " " << _output(x, y, z, c, t) << "\n ";// << vox_val << " vox sum " << T(vox_sum) << "\n";
 								}
+								
+								_output(x, y, z, c, t) = T(x + y + z + c + t);// im(x, y, z, c, t);
+								
+								if (x % 50 == 0 & y % 50 == 0 & z % 50 == 0) {							
+									cout << "post: " << im(x, y, z, c, t) << " " << _output(x, y, z, c, t) << "\n ";// << vox_val << " vox sum " << T(vox_sum) << "\n";
+								}/*
 								//	cout << x << "," << y << "," << z << ", " << c << ", " << t << "\n";
 								//	cout << im(x,y,z,c,t) << " " << vox_sum << " " << num_in_range << "\n";
 								//}								
@@ -106,12 +116,14 @@ namespace hmc {
 								if (_output(x, y, z, c, t) != im(x, y, z, c, t)) {
 									cout << x << " " << y << " " << z << " " << c << " " << t << "\n";
 								}*/
-								//_output(x, y, z, 0, 0) = 0;// vox_sum / double(pow(2 * _rad + 1, 3)); // im(x, y, z, c, t)*0.5*gauss3D(0, 0, 0, _rad);// vox_sum;
+								//_output(x, y, z, c, t) = im(x, y, z, c, t); // vox_sum;// vox_sum / double(pow(2 * _rad + 1, 3)); // im(x, y, z, c, t)*0.5*gauss3D(0, 0, 0, _rad);// vox_sum;
+								
 							}
 						}
 					}
 				}
 			}
+			
 			//cout << "num voxels " << voxls; 
 
 
@@ -133,7 +145,7 @@ namespace hmc {
 		double gauss3D(int dx, int dy, int dz, int rad=1.0) {			
 			double val = 1.0;
 			if (rad > 0) {
-				double factor = 1;// / pow(sqrt(2 * M_PI * rad), 3);
+				double factor = 1 / pow(sqrt(2 * M_PI * rad), 3);
 				double numerator = double(pow(dx, 2) + pow(dy, 2) + pow(dz, 2));
 				double denominator = double(pow(rad, 2) * 2);
 

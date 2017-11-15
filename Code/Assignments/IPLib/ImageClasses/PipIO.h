@@ -60,10 +60,10 @@ namespace hmc {
 
 		// Initialize new image object with read in dimensions
 		Image im = Image(pip_dim);
-
+		
 		// Reads in the values of the image
 		Image::iterator pip_data_it = im.begin();
-		for (Image::T val; ifs.read(as_bytes(val), sizeof(short));) {
+		for (Image::T val; ifs.read(as_bytes(val), sizeof(short));) {			
 			*pip_data_it = val;			
 			pip_data_it++;
 		}		
@@ -89,7 +89,7 @@ namespace hmc {
 		Image::dimension dims = im.size();
 		
 		// Write image dimensions		
-		for (int dim : dims) {
+		for (int dim : dims) {			
 			ofs.write(as_bytes(dim), sizeof(int));
 		}
 		
