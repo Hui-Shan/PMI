@@ -19,8 +19,8 @@ namespace hmc {
 		};
 		
 		// declaration of read and write functions
-		Image read() override;		
-		void write(const Image&) override;		
+		Image read() const override;		
+		void write(const Image&) const override;		
 
 	protected:
 		string filename;	
@@ -28,7 +28,7 @@ namespace hmc {
 	};
 
 	// Functions for PipIO class	
-	Image PipIO::read()
+	Image PipIO::read() const
 		// Function that reads in the file specified by filename and returns an
 		// Image object
 	{
@@ -77,7 +77,7 @@ namespace hmc {
 		return im;
 	}
 
-	void PipIO::write(const Image& im)
+	void PipIO::write(const Image& im) const
 		// Function writes pip image to filename
 	{
 		ofstream ofs{ filename, ios_base::binary };

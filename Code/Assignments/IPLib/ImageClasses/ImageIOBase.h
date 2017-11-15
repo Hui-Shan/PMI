@@ -15,8 +15,8 @@ namespace hmc {
 
 		virtual string get_filename() { return filename; };
 		// pure virtual read and write functions
-		virtual Image read() = 0;		
-		virtual void write(const Image&) = 0;
+		virtual Image read() const = 0;		
+		virtual void write(const Image&) const = 0;
 
 		// don't 'copy construct'
 		ImageIOBase(const ImageIOBase&) = delete;

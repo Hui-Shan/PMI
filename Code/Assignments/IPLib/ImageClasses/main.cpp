@@ -135,9 +135,10 @@ int main()
 		Image image = io->read();
 		cout << "Read in " << filename << "\n";
 		
-		image(-1, 1000, 0, 1, 1);
-		image(-1, 1000, 0, 1, 1) = 2* image(-1, 1000, 0, 1, 1);
-		image(-1, 1000, 0, 1, 1);
+		T val00000 = image(0, 0, 0, 0, 0);
+		cout << val00000 << "\n";
+		image(10, 10, 10, 0, 0) = T(200);// *image(-1, 1000, 0, 0, 0);
+		image(0, 0, 0, 0, 0);
 
 		string pppfile = "..//..//data//test_write" + ext;
 		unique_ptr<ImageIOBase> io_ppp = ImageIOFactory::getIO(pppfile);

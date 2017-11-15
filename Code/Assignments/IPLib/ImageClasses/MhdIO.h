@@ -23,18 +23,18 @@ namespace hmc {
 		MhdIO(string file_in) : ImageIOBase(file_in) { filename = file_in; };
 				
 		// declaration of read and write functions
-		Image read() override;		
-		void write(const Image&) override;
+		Image read() const override;		
+		void write(const Image&) const override;
 		
 	protected:
 		string filename;
 
 	private:
-		string get_relative_filepath();
+		string get_relative_filepath() const;
 	};
 
 	// Functions for MhdIO
-	string MhdIO::get_relative_filepath()
+	string MhdIO::get_relative_filepath() const
 		// Get relative folder path of filename if present
 	{
 		string path_out; // default value for path_out = ""
@@ -46,7 +46,7 @@ namespace hmc {
 		return path_out;
 	}
 
-	Image MhdIO::read()
+	Image MhdIO::read () const
 		// Reads in the image voxel values for the Mhd file named filename
 	{		
 		// declare helper variables
@@ -135,7 +135,7 @@ namespace hmc {
 		return im_mhd;
 	}
 
-	void MhdIO::write(const Image& im)
+	void MhdIO::write(const Image& im) const 
 	{
 		// Open .mhd output filestream
 		ofstream ofs_mhd{ filename };
