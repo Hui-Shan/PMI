@@ -105,6 +105,7 @@ namespace hmc {
 								}
 								
 								_output(x, y, z, c, t) = T(x + y + z + c + t);// im(x, y, z, c, t);
+								cout << _output(x, y, z, c, t) << "address " << &(_output(x, y, z, c, t)) << "\n";
 								
 								if (x % 50 == 0 & y % 50 == 0 & z % 50 == 0) {							
 									cout << "post: " << im(x, y, z, c, t) << " " << _output(x, y, z, c, t) << "\n ";// << vox_val << " vox sum " << T(vox_sum) << "\n";
